@@ -1,0 +1,34 @@
+diff --git a/proxy/src/main/java/com/velocitypowered/proxy/connection/MinecraftConnection.java b/proxy/src/main/java/com/velocitypowered/proxy/connection/MinecraftConnection.java
+index c9173907..8b84bbc1 100644
+--- a/proxy/src/main/java/com/velocitypowered/proxy/connection/MinecraftConnection.java
++++ b/proxy/src/main/java/com/velocitypowered/proxy/connection/MinecraftConnection.java
+@@ -83,6 +83,9 @@ public class MinecraftConnection extends ChannelInboundHandlerAdapter {
+ 
+   private static final Logger logger = LogManager.getLogger(MinecraftConnection.class);
+ 
++  // ByteNya start
++  public final com.bytenya.minecraft.velocityguard.VgConnection vgConnection;
++  // ByteNya end
+   private final Channel channel;
+   private SocketAddress remoteAddress;
+   private StateRegistry state;
+@@ -101,6 +104,9 @@ public class MinecraftConnection extends ChannelInboundHandlerAdapter {
+    * @param server  the Velocity instance
+    */
+   public MinecraftConnection(Channel channel, VelocityServer server) {
++    // ByteNya start
++    this.vgConnection = server.vg.createConnection(channel, this);
++    // ByteNya end
+     this.channel = channel;
+     this.remoteAddress = channel.remoteAddress();
+     this.server = server;
+@@ -122,6 +128,9 @@ public class MinecraftConnection extends ChannelInboundHandlerAdapter {
+ 
+   @Override
+   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
++    // ByteNya start
++    vgConnection.channelInactive();
++    // ByteNya end
+     if (activeSessionHandler != null) {
+       activeSessionHandler.disconnected();
+     }

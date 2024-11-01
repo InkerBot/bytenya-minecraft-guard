@@ -1,0 +1,38 @@
+diff --git a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/InitialLoginSessionHandler.java b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/InitialLoginSessionHandler.java
+index 00187d34..96bae311 100644
+--- a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/InitialLoginSessionHandler.java
++++ b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/InitialLoginSessionHandler.java
+@@ -150,6 +150,10 @@ public class InitialLoginSessionHandler implements MinecraftSessionHandler {
+             mcConnection.write(request);
+             this.currentState = LoginState.ENCRYPTION_REQUEST_SENT;
+           } else {
++            // ByteNya start
++            // return true if go normal offline authorize
++            if (!server.vg.eventFactory.consumePlayerOfflineEvent(mcConnection, inbound, login)) return;
++            // ByteNya end
+             mcConnection.setActiveSessionHandler(StateRegistry.LOGIN,
+                 new AuthSessionHandler(server, inbound,
+                     GameProfile.forOfflinePlayer(login.getUsername()), false));
+@@ -201,6 +205,11 @@ public class InitialLoginSessionHandler implements MinecraftSessionHandler {
+       byte[] decryptedSharedSecret = decryptRsa(serverKeyPair, packet.getSharedSecret());
+       String serverId = generateServerId(decryptedSharedSecret, serverKeyPair.getPublic());
+ 
++      // ByteNya start
++      // return true if go normal online authorize, false handle by vg self
++      if (!server.vg.eventFactory.consumePlayerOnlineEvent(mcConnection, inbound, login.getUsername(), serverId)) return true;
++      // ByteNya end
++
+       String playerIp = ((InetSocketAddress) mcConnection.getRemoteAddress()).getHostString();
+       String url = String.format(MOJANG_HASJOINED_URL,
+           urlFormParameterEscaper().escape(login.getUsername()), serverId);
+@@ -252,6 +261,10 @@ public class InitialLoginSessionHandler implements MinecraftSessionHandler {
+                       Component.translatable("multiplayer.disconnect.invalid_public_key"));
+                 }
+               }
++              // ByteNya start
++              // return true if trust the profile, false verify later
++              if (!server.vg.eventFactory.consumePlayerOnlineProfileEvent(mcConnection, inbound, profile)) return;
++              // ByteNya end
+               // All went well, initialize the session.
+               mcConnection.setActiveSessionHandler(StateRegistry.LOGIN,
+                   new AuthSessionHandler(server, inbound, profile, true));

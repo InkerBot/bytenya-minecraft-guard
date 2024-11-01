@@ -1,0 +1,35 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgConfig.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgConfig.java
+new file mode 100644
+index 00000000..d6e85544
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgConfig.java
+@@ -0,0 +1,29 @@
++package com.bytenya.minecraft.velocityguard;
++
++import com.velocitypowered.api.util.GameProfile;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
++
++import java.io.IOException;
++import java.nio.file.Path;
++import java.util.Collections;
++import java.util.List;
++
++public class VgConfig {
++  private static final Logger logger = LogManager.getLogger(VgConfig.class);
++  public final List<GameProfile.Property> unloginedProperties;
++
++  public VgConfig(List<GameProfile.Property> unloginedProperties) {
++    this.unloginedProperties = unloginedProperties;
++  }
++
++  public boolean validate() {
++    return true;
++  }
++
++  public static VgConfig read(Path path) throws IOException {
++    return new VgConfig(
++        Collections.emptyList()
++    );
++  }
++}

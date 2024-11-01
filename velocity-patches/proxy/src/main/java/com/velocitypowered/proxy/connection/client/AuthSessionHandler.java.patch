@@ -1,0 +1,14 @@
+diff --git a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java
+index 6165a846..5b7580d0 100644
+--- a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java
++++ b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java
+@@ -70,6 +70,9 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
+   private final boolean onlineMode;
+   private State loginState = State.START; // 1.20.2+
+ 
++  // ByteNya start
++  public
++  // ByteNya end
+   AuthSessionHandler(VelocityServer server, LoginInboundConnection inbound,
+       GameProfile profile, boolean onlineMode) {
+     this.server = Preconditions.checkNotNull(server, "server");

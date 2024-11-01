@@ -1,0 +1,15 @@
+#!/bin/sh
+
+cd Velocity || exit
+
+PATCH_FILES=$(cat ../velocity-patches-trace-files)
+
+git reset --hard
+git clean -fd
+
+for PATCH_FILE in $PATCH_FILES ; do
+  echo ../velocity-patches/"$PATCH_FILE".patch
+  git apply --allow-empty ../velocity-patches/"$PATCH_FILE".patch
+done
+
+cd ..

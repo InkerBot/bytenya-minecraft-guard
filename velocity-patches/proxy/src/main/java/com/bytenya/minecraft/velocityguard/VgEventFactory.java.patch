@@ -1,0 +1,64 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java
+new file mode 100644
+index 00000000..ef57c31c
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java
+@@ -0,0 +1,58 @@
++package com.bytenya.minecraft.velocityguard;
++
++import com.velocitypowered.api.util.GameProfile;
++import com.velocitypowered.proxy.connection.MinecraftConnection;
++import com.velocitypowered.proxy.connection.client.AuthSessionHandler;
++import com.velocitypowered.proxy.connection.client.LoginInboundConnection;
++import com.velocitypowered.proxy.protocol.StateRegistry;
++import com.velocitypowered.proxy.protocol.packet.ServerLoginPacket;
++import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
++
++public class VgEventFactory {
++  private final VelocityGuard vg;
++
++  public VgEventFactory(VelocityGuard vg) {
++    this.vg = vg;
++  }
++
++  // return true if go normal offline authorize
++  public boolean consumePlayerOfflineEvent(MinecraftConnection mcConnection, LoginInboundConnection inbound, ServerLoginPacket login) {
++    mcConnection.vgConnection.computeRequestUsername(login.getUsername());
++
++    if (false) {
++      mcConnection.setActiveSessionHandler(StateRegistry.LOGIN,
++          new AuthSessionHandler(vg.server, inbound,
++              GameProfile.forOfflinePlayer(login.getUsername()), false));
++      return false;
++    }
++
++    return true;
++  }
++
++  // return true if go normal online authorize
++  public boolean consumePlayerOnlineEvent(MinecraftConnection mcConnection, LoginInboundConnection inbound, String username, String serverId) {
++    mcConnection.vgConnection.computeRequestUsername(username);
++    mcConnection.vgConnection.computeServerId(serverId);
++
++    if (false) {
++      mcConnection.setActiveSessionHandler(StateRegistry.LOGIN,
++          new AuthSessionHandler(vg.server, inbound, mcConnection.vgConnection.unloginedProfile, true));
++      return false;
++    }
++
++    return true;
++  }
++
++  // return true if trust the profile, false verify later
++  public boolean consumePlayerOnlineProfileEvent(MinecraftConnection mcConnection, LoginInboundConnection inbound, GameProfile profile) {
++    mcConnection.vgConnection.computeOnlineProfile(profile);
++
++    if (false) {
++      mcConnection.setActiveSessionHandler(StateRegistry.LOGIN,
++          new AuthSessionHandler(vg.server, inbound, mcConnection.vgConnection.unloginedProfile, true));
++      return false;
++    }
++
++    return true;
++  }
++}

@@ -1,0 +1,17 @@
+#!/bin/sh
+
+cd Velocity || exit
+
+git add .
+PATCH_FILES=$(git diff --cached --name-only)
+
+echo "$PATCH_FILES" > ../velocity-patches-trace-files
+rm -rf ../velocity-patches
+
+for PATCH_FILE in $PATCH_FILES ; do
+  echo "$PATCH_FILE"
+  mkdir -p ../velocity-patches/"$(dirname "$PATCH_FILE")"
+  git diff --no-color --cached --binary "$PATCH_FILE" > ../velocity-patches/"$PATCH_FILE".patch
+done
+
+cd ..

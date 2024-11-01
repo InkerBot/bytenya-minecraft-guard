@@ -1,0 +1,59 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgConnection.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgConnection.java
+new file mode 100644
+index 00000000..6d9a2406
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgConnection.java
+@@ -0,0 +1,53 @@
++package com.bytenya.minecraft.velocityguard;
++
++import com.velocitypowered.api.util.GameProfile;
++import com.velocitypowered.proxy.connection.MinecraftConnection;
++import io.netty.channel.Channel;
++import org.jetbrains.annotations.Nullable;
++
++import java.nio.charset.StandardCharsets;
++import java.util.UUID;
++
++public class VgConnection {
++  private final VelocityGuard vg;
++  private final Channel channel;
++  private final MinecraftConnection minecraftConnection;
++
++  private final long connectTime;
++  public final GameProfile unloginedProfile;
++
++  private @Nullable String serverId;
++  private @Nullable String requestUsername;
++  private @Nullable GameProfile onlineProfile;
++
++  public VgConnection(VelocityGuard vg, Channel channel, MinecraftConnection minecraftConnection) {
++    this.vg = vg;
++    this.channel = channel;
++    this.minecraftConnection = minecraftConnection;
++
++    this.connectTime = System.currentTimeMillis();
++
++    String channelId = channel.id().asLongText();
++    this.unloginedProfile = new GameProfile(
++        UUID.nameUUIDFromBytes(channelId.getBytes(StandardCharsets.UTF_8)),
++        "#" + channelId,
++        vg.config.unloginedProperties
++    );
++  }
++
++  public void computeRequestUsername(String username) {
++    this.requestUsername = username;
++  }
++
++  public void computeServerId(String serverId) {
++    this.serverId = serverId;
++  }
++
++  public void computeOnlineProfile(GameProfile onlineProfile) {
++    this.onlineProfile = onlineProfile;
++  }
++
++  public void channelInactive() {
++
++  }
++}

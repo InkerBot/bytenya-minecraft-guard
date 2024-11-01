@@ -1,0 +1,8 @@
+proxy/src/main/java/com/bytenya/minecraft/velocityguard/VelocityGuard.java
+proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgConfig.java
+proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgConnection.java
+proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java
+proxy/src/main/java/com/velocitypowered/proxy/VelocityServer.java
+proxy/src/main/java/com/velocitypowered/proxy/connection/MinecraftConnection.java
+proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java
+proxy/src/main/java/com/velocitypowered/proxy/connection/client/InitialLoginSessionHandler.java

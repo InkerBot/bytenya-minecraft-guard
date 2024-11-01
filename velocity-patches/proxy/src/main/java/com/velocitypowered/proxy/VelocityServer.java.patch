@@ -1,0 +1,15 @@
+diff --git a/proxy/src/main/java/com/velocitypowered/proxy/VelocityServer.java b/proxy/src/main/java/com/velocitypowered/proxy/VelocityServer.java
+index cecc440c..112f2b71 100644
+--- a/proxy/src/main/java/com/velocitypowered/proxy/VelocityServer.java
++++ b/proxy/src/main/java/com/velocitypowered/proxy/VelocityServer.java
+@@ -149,6 +149,10 @@ public class VelocityServer implements ProxyServer, ForwardingAudience {
+       .registerTypeHierarchyAdapter(Favicon.class, FaviconSerializer.INSTANCE)
+       .create();
+ 
++  // ByteNya start
++  public final com.bytenya.minecraft.velocityguard.VelocityGuard vg = new com.bytenya.minecraft.velocityguard.VelocityGuard(this);
++  // ByteNya end
++
+   private final ConnectionManager cm;
+   private final ProxyOptions options;
+   private @MonotonicNonNull VelocityConfiguration configuration;
