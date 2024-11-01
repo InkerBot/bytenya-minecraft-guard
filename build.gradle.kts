@@ -1,19 +1,22 @@
 plugins {
     id("java")
+    id("org.springframework.boot") version "3.3.5"
 }
 
-group = "bot.inker.ait"
-version = "1.0-SNAPSHOT"
+allprojects {
+    group = "bot.inker.ait"
+    version = "1.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
+    repositories {
+        mavenCentral()
+        maven("https://repo.papermc.io/repository/maven-public/")
+    }
 }
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    implementation("com.velocitypowered:velocity-proxy")
 }
 
-tasks.test {
-    useJUnitPlatform()
+springBoot {
+    mainClass.set("com.bytenya.minecraft.vgwrapper.Main")
 }
