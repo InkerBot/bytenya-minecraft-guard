@@ -1,9 +1,9 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java
 new file mode 100644
-index 00000000..ef57c31c
+index 00000000..7ac6bd68
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java
-@@ -0,0 +1,58 @@
+@@ -0,0 +1,59 @@
 +package com.bytenya.minecraft.velocityguard;
 +
 +import com.velocitypowered.api.util.GameProfile;
@@ -61,4 +61,5 @@ index 00000000..ef57c31c
 +
 +    return true;
 +  }
++
 +}

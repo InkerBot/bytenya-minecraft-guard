@@ -1,11 +1,12 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VelocityGuard.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VelocityGuard.java
 new file mode 100644
-index 00000000..fcc86788
+index 00000000..f44c300c
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VelocityGuard.java
-@@ -0,0 +1,47 @@
+@@ -0,0 +1,48 @@
 +package com.bytenya.minecraft.velocityguard;
 +
++import com.bytenya.minecraft.velocityguard.api.VgServer;
 +import com.velocitypowered.proxy.VelocityServer;
 +import com.velocitypowered.proxy.connection.MinecraftConnection;
 +import io.netty.channel.Channel;
@@ -14,7 +15,7 @@ index 00000000..fcc86788
 +
 +import java.nio.file.Path;
 +
-+public class VelocityGuard {
++public class VelocityGuard implements VgServer {
 +  private static final Logger logger = LogManager.getLogger(VelocityGuard.class);
 +
 +  public final VelocityServer server;

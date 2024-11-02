@@ -1,0 +1,57 @@
+diff --git a/api/src/main/java/com/bytenya/minecraft/velocityguard/api/event/VgPlayerChooseInitialServerEvent.java b/api/src/main/java/com/bytenya/minecraft/velocityguard/api/event/VgPlayerChooseInitialServerEvent.java
+new file mode 100644
+index 00000000..7d1b092c
+--- /dev/null
++++ b/api/src/main/java/com/bytenya/minecraft/velocityguard/api/event/VgPlayerChooseInitialServerEvent.java
+@@ -0,0 +1,51 @@
++package com.bytenya.minecraft.velocityguard.api.event;
++
++import com.google.common.base.Preconditions;
++import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent;
++import com.velocitypowered.api.proxy.Player;
++import com.velocitypowered.api.proxy.server.RegisteredServer;
++import org.checkerframework.checker.nullness.qual.Nullable;
++
++import java.util.Optional;
++
++public class VgPlayerChooseInitialServerEvent {
++
++  private final Player player;
++  private @Nullable RegisteredServer initialServer;
++
++  /**
++   * Constructs a PlayerChooseInitialServerEvent.
++   *
++   * @param player the player that was connected
++   * @param initialServer the initial server selected, may be {@code null}
++   */
++  public VgPlayerChooseInitialServerEvent(Player player, @Nullable RegisteredServer initialServer) {
++    this.player = Preconditions.checkNotNull(player, "player");
++    this.initialServer = initialServer;
++  }
++
++  public Player getPlayer() {
++    return player;
++  }
++
++  public Optional<RegisteredServer> getInitialServer() {
++    return Optional.ofNullable(initialServer);
++  }
++
++  /**
++   * Sets the new initial server.
++   *
++   * @param server the initial server the player should connect to
++   */
++  public void setInitialServer(@Nullable RegisteredServer server) {
++    this.initialServer = server;
++  }
++
++  @Override
++  public String toString() {
++    return "VgPlayerChooseInitialServerEvent{"
++        + "player=" + player
++        + ", initialServer=" + initialServer
++        + '}';
++  }
++}

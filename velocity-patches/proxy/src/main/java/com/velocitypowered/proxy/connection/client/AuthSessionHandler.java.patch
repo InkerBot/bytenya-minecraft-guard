@@ -1,5 +1,5 @@
 diff --git a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java
-index 6165a846..5b7580d0 100644
+index 6165a846..7ad2c03d 100644
 --- a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java
 +++ b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java
 @@ -70,6 +70,9 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
@@ -12,3 +12,49 @@ index 6165a846..5b7580d0 100644
    AuthSessionHandler(VelocityServer server, LoginInboundConnection inbound,
        GameProfile profile, boolean onlineMode) {
      this.server = Preconditions.checkNotNull(server, "server");
+@@ -180,7 +183,9 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
+       loginState = State.ACKNOWLEDGED;
+       mcConnection.setActiveSessionHandler(StateRegistry.CONFIG, new ClientConfigSessionHandler(server, connectedPlayer));
+ 
+-      server.getEventManager().fire(new PostLoginEvent(connectedPlayer)).thenCompose(ignored -> {
++      // ByteNya start
++      server.getEventManager().fire(new com.bytenya.minecraft.velocityguard.api.event.VgPostLoginEvent(connectedPlayer)).thenCompose(ignored -> {
++      // ByteNya end
+         return connectToInitialServer(connectedPlayer);
+       }).exceptionally((ex) -> {
+         logger.error("Exception while connecting {} to initial server", connectedPlayer, ex);
+@@ -211,7 +216,9 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
+   private void completeLoginProtocolPhaseAndInitialize(ConnectedPlayer player) {
+     mcConnection.setAssociation(player);
+ 
+-    server.getEventManager().fire(new LoginEvent(player)).thenAcceptAsync(event -> {
++    // ByteNya start
++    server.getEventManager().fire(new com.bytenya.minecraft.velocityguard.api.event.VgLoginEvent(player)).thenAcceptAsync(event -> {
++    // ByteNya end
+       if (mcConnection.isClosed()) {
+         // The player was disconnected
+         server.getEventManager().fireAndForget(new DisconnectEvent(player,
+@@ -238,7 +245,9 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
+         if (inbound.getProtocolVersion().lessThan(ProtocolVersion.MINECRAFT_1_20_2)) {
+           loginState = State.ACKNOWLEDGED;
+           mcConnection.setActiveSessionHandler(StateRegistry.PLAY, new InitialConnectSessionHandler(player, server));
+-          server.getEventManager().fire(new PostLoginEvent(player)).thenCompose((ignored) -> {
++          // ByteNya start
++          server.getEventManager().fire(new com.bytenya.minecraft.velocityguard.api.event.VgPostLoginEvent(player)).thenCompose((ignored) -> {
++          // ByteNya end
+             return connectToInitialServer(player);
+           }).exceptionally((ex) -> {
+             logger.error("Exception while connecting {} to initial server", player, ex);
+@@ -254,8 +263,10 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
+ 
+   private CompletableFuture<Void> connectToInitialServer(ConnectedPlayer player) {
+     Optional<RegisteredServer> initialFromConfig = player.getNextServerToTry();
+-    PlayerChooseInitialServerEvent event =
+-        new PlayerChooseInitialServerEvent(player, initialFromConfig.orElse(null));
++    // ByteNya start
++    com.bytenya.minecraft.velocityguard.api.event.VgPlayerChooseInitialServerEvent event =
++        new com.bytenya.minecraft.velocityguard.api.event.VgPlayerChooseInitialServerEvent(player, initialFromConfig.orElse(null));
++    // ByteNya end
+ 
+     return server.getEventManager().fire(event).thenRunAsync(() -> {
+       Optional<RegisteredServer> toTry = event.getInitialServer();

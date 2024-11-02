@@ -1,0 +1,10 @@
+diff --git a/api/src/main/java/com/bytenya/minecraft/velocityguard/api/VgServer.java b/api/src/main/java/com/bytenya/minecraft/velocityguard/api/VgServer.java
+new file mode 100644
+index 00000000..4ece1540
+--- /dev/null
++++ b/api/src/main/java/com/bytenya/minecraft/velocityguard/api/VgServer.java
+@@ -0,0 +1,4 @@
++package com.bytenya.minecraft.velocityguard.api;
++
++public interface VgServer {
++}
