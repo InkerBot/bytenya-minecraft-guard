@@ -1,5 +1,5 @@
 diff --git a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java
-index 6165a846..7ad2c03d 100644
+index 6165a846..5d25429c 100644
 --- a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java
 +++ b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java
 @@ -70,6 +70,9 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
@@ -12,49 +12,94 @@ index 6165a846..7ad2c03d 100644
    AuthSessionHandler(VelocityServer server, LoginInboundConnection inbound,
        GameProfile profile, boolean onlineMode) {
      this.server = Preconditions.checkNotNull(server, "server");
-@@ -180,7 +183,9 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
+@@ -88,7 +91,9 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
+         onlineMode);
+     final GameProfile finalProfile = profile;
+ 
+-    server.getEventManager().fire(profileRequestEvent).thenComposeAsync(profileEvent -> {
++    // ByteNya start
++    server.vg.eventFactory.consumeProfileRequestEvent(mcConnection, this, profileRequestEvent).thenComposeAsync(profileEvent -> {
++    // ByteNya end
+       if (mcConnection.isClosed()) {
+         // The player disconnected after we authenticated them.
+         return CompletableFuture.completedFuture(null);
+@@ -108,8 +113,9 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
+ 
+       logger.info("{} has connected", player);
+ 
+-      return server.getEventManager()
+-          .fire(new PermissionsSetupEvent(player, ConnectedPlayer.DEFAULT_PERMISSIONS))
++      // ByteNya start
++      return server.vg.eventFactory.consumePermissionsSetupEvent(mcConnection, this, player, ConnectedPlayer.DEFAULT_PERMISSIONS)
++      // ByteNya end
+           .thenAcceptAsync(event -> {
+             if (!mcConnection.isClosed()) {
+               // wait for permissions to load, then set the players permission function
+@@ -180,7 +186,9 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
        loginState = State.ACKNOWLEDGED;
        mcConnection.setActiveSessionHandler(StateRegistry.CONFIG, new ClientConfigSessionHandler(server, connectedPlayer));
  
 -      server.getEventManager().fire(new PostLoginEvent(connectedPlayer)).thenCompose(ignored -> {
 +      // ByteNya start
-+      server.getEventManager().fire(new com.bytenya.minecraft.velocityguard.api.event.VgPostLoginEvent(connectedPlayer)).thenCompose(ignored -> {
++      server.vg.eventFactory.consumePostLoginEvent(mcConnection, this, connectedPlayer).thenCompose(ignored -> {
 +      // ByteNya end
          return connectToInitialServer(connectedPlayer);
        }).exceptionally((ex) -> {
          logger.error("Exception while connecting {} to initial server", connectedPlayer, ex);
-@@ -211,7 +216,9 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
+@@ -192,8 +200,9 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
+ 
+   @Override
+   public boolean handle(ServerboundCookieResponsePacket packet) {
+-    server.getEventManager()
+-        .fire(new CookieReceiveEvent(connectedPlayer, packet.getKey(), packet.getPayload()))
++    // ByteNya start
++    server.vg.eventFactory.consumeCookieReceiveEvent(mcConnection, this, connectedPlayer, packet.getKey(), packet.getPayload())
++    // ByteNya end
+         .thenAcceptAsync(event -> {
+           if (event.getResult().isAllowed()) {
+             // The received cookie must have been requested by a proxy plugin in login phase,
+@@ -211,11 +220,14 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
    private void completeLoginProtocolPhaseAndInitialize(ConnectedPlayer player) {
      mcConnection.setAssociation(player);
  
 -    server.getEventManager().fire(new LoginEvent(player)).thenAcceptAsync(event -> {
 +    // ByteNya start
-+    server.getEventManager().fire(new com.bytenya.minecraft.velocityguard.api.event.VgLoginEvent(player)).thenAcceptAsync(event -> {
++    server.vg.eventFactory.consumeLoginEvent(mcConnection, this, player).thenAcceptAsync(event -> {
 +    // ByteNya end
        if (mcConnection.isClosed()) {
++        // ByteNya start
          // The player was disconnected
-         server.getEventManager().fireAndForget(new DisconnectEvent(player,
-@@ -238,7 +245,9 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
+-        server.getEventManager().fireAndForget(new DisconnectEvent(player,
+-            DisconnectEvent.LoginStatus.CANCELLED_BY_USER_BEFORE_COMPLETE));
++        server.vg.eventFactory.consumeDisconnectEvent(mcConnection, this, player, DisconnectEvent.LoginStatus.CANCELLED_BY_USER_BEFORE_COMPLETE);
++        // ByteNya end
+         return;
+       }
+ 
+@@ -238,7 +250,9 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
          if (inbound.getProtocolVersion().lessThan(ProtocolVersion.MINECRAFT_1_20_2)) {
            loginState = State.ACKNOWLEDGED;
            mcConnection.setActiveSessionHandler(StateRegistry.PLAY, new InitialConnectSessionHandler(player, server));
 -          server.getEventManager().fire(new PostLoginEvent(player)).thenCompose((ignored) -> {
 +          // ByteNya start
-+          server.getEventManager().fire(new com.bytenya.minecraft.velocityguard.api.event.VgPostLoginEvent(player)).thenCompose((ignored) -> {
++          server.vg.eventFactory.consumePostLoginEvent(mcConnection, this, player).thenCompose(ignored -> {
 +          // ByteNya end
              return connectToInitialServer(player);
            }).exceptionally((ex) -> {
              logger.error("Exception while connecting {} to initial server", player, ex);
-@@ -254,8 +263,10 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
+@@ -254,10 +268,12 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
  
    private CompletableFuture<Void> connectToInitialServer(ConnectedPlayer player) {
      Optional<RegisteredServer> initialFromConfig = player.getNextServerToTry();
 -    PlayerChooseInitialServerEvent event =
 -        new PlayerChooseInitialServerEvent(player, initialFromConfig.orElse(null));
 +    // ByteNya start
-+    com.bytenya.minecraft.velocityguard.api.event.VgPlayerChooseInitialServerEvent event =
-+        new com.bytenya.minecraft.velocityguard.api.event.VgPlayerChooseInitialServerEvent(player, initialFromConfig.orElse(null));
-+    // ByteNya end
++    // PlayerChooseInitialServerEvent event =
++    //     new PlayerChooseInitialServerEvent(player, initialFromConfig.orElse(null));
  
-     return server.getEventManager().fire(event).thenRunAsync(() -> {
+-    return server.getEventManager().fire(event).thenRunAsync(() -> {
++    return server.vg.eventFactory.consumePlayerChooseInitialServerEvent(mcConnection, this, player, initialFromConfig.orElse(null)).thenAcceptAsync(event -> {
++    // ByteNya end
        Optional<RegisteredServer> toTry = event.getInitialServer();
+       if (toTry.isEmpty()) {
+         player.disconnect0(

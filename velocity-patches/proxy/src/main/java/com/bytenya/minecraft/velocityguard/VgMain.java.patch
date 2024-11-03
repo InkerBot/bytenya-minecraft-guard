@@ -1,0 +1,40 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgMain.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgMain.java
+new file mode 100644
+index 00000000..1262c141
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgMain.java
+@@ -0,0 +1,34 @@
++package com.bytenya.minecraft.velocityguard;
++
++import com.velocitypowered.natives.util.Natives;
++import com.velocitypowered.proxy.Velocity;
++import com.velocitypowered.proxy.util.VelocityProperties;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
++
++import java.io.File;
++import java.io.IOException;
++
++public class VgMain {
++  private static final Logger logger;
++
++  static {
++    System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
++    System.setProperty("java.awt.headless", "true");
++    if (!VelocityProperties.hasProperty("velocity.natives-tmpdir")) {
++      String nativesDir = new File("native").getAbsolutePath();
++      System.setProperty("velocity.natives-tmpdir", nativesDir);
++      System.setProperty("io.netty.native.workdir", nativesDir);
++    }
++
++    logger = LogManager.getLogger(VgMain.class);
++  }
++
++  public static void main(String[] args) throws IOException {
++    if (!Natives.vg.get()) {
++      logger.warn("Failed to load Velocity Guard native library. You won't get any support from us!");
++    }
++
++    Velocity.main(args);
++  }
++}

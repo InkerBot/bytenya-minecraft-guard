@@ -1,0 +1,42 @@
+diff --git a/native/src/main/java/com/velocitypowered/natives/util/Natives.java b/native/src/main/java/com/velocitypowered/natives/util/Natives.java
+index 3a0bd1f2..ceed5513 100644
+--- a/native/src/main/java/com/velocitypowered/natives/util/Natives.java
++++ b/native/src/main/java/com/velocitypowered/natives/util/Natives.java
+@@ -78,8 +78,25 @@ public class Natives {
+     }
+   }
+ 
++  // ByteNya start
++  public static final NativeCodeLoader<Boolean> vg = new NativeCodeLoader<>(
++      ImmutableList.of(
++          new NativeCodeLoader.Variant<>(NativeConstraints.LINUX_X86_64,
++              copyAndLoadNative("/vgn-linux-x86_64.so"),
++              "ByteNya Velocity Guard Native", true),
++          new NativeCodeLoader.Variant<>(NativeCodeLoader.ALWAYS, () -> {},
++              "Java", false)
++      )
++  );
++  // ByteNya end
++
+   public static final NativeCodeLoader<VelocityCompressorFactory> compress = new NativeCodeLoader<>(
+       ImmutableList.of(
++          // ByteNya start
++          new NativeCodeLoader.Variant<>(vg::get, () -> {},
++              "ByteNya Velocity Guard Native", LibdeflateVelocityCompressor.FACTORY),
++          // ByteNya end
++
+           new NativeCodeLoader.Variant<>(NativeConstraints.LINUX_X86_64,
+               copyAndLoadNative("/linux_x86_64/velocity-compress.so"),
+               "libdeflate (Linux x86_64)",
+@@ -109,6 +126,11 @@ public class Natives {
+ 
+   public static final NativeCodeLoader<VelocityCipherFactory> cipher = new NativeCodeLoader<>(
+       ImmutableList.of(
++          // ByteNya start
++          new NativeCodeLoader.Variant<>(vg::get, () -> {},
++              "ByteNya Velocity Guard Native", NativeVelocityCipher.FACTORY),
++          // ByteNya end
++
+           new NativeCodeLoader.Variant<>(NativeConstraints.LINUX_X86_64,
+               copyAndLoadNative("/linux_x86_64/velocity-cipher.so"), // Any local version
+               "OpenSSL local (Linux x86_64)", NativeVelocityCipher.FACTORY),

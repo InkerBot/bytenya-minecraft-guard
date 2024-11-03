@@ -15,8 +15,9 @@ allprojects {
 
 dependencies {
     implementation("com.velocitypowered:velocity-proxy")
+    implementation("com.velocitypowered:velocity-native")
 }
 
 springBoot {
-    mainClass.set("com.bytenya.minecraft.vgwrapper.Main")
+    mainClass.set("com.bytenya.minecraft.velocityguard.VgMain")
 }

@@ -1,20 +1,34 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java
 new file mode 100644
-index 00000000..7ac6bd68
+index 00000000..23bdff83
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java
-@@ -0,0 +1,59 @@
+@@ -0,0 +1,100 @@
 +package com.bytenya.minecraft.velocityguard;
 +
++import com.velocitypowered.api.event.connection.DisconnectEvent;
++import com.velocitypowered.api.event.connection.LoginEvent;
++import com.velocitypowered.api.event.connection.PostLoginEvent;
++import com.velocitypowered.api.event.permission.PermissionsSetupEvent;
++import com.velocitypowered.api.event.player.CookieReceiveEvent;
++import com.velocitypowered.api.event.player.GameProfileRequestEvent;
++import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent;
++import com.velocitypowered.api.permission.PermissionProvider;
++import com.velocitypowered.api.proxy.server.RegisteredServer;
 +import com.velocitypowered.api.util.GameProfile;
 +import com.velocitypowered.proxy.connection.MinecraftConnection;
 +import com.velocitypowered.proxy.connection.client.AuthSessionHandler;
++import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
 +import com.velocitypowered.proxy.connection.client.LoginInboundConnection;
 +import com.velocitypowered.proxy.protocol.StateRegistry;
 +import com.velocitypowered.proxy.protocol.packet.ServerLoginPacket;
++import net.kyori.adventure.key.Key;
 +import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 +
++import java.util.concurrent.CompletableFuture;
++
 +public class VgEventFactory {
++
 +  private final VelocityGuard vg;
 +
 +  public VgEventFactory(VelocityGuard vg) {
@@ -62,4 +76,31 @@ index 00000000..7ac6bd68
 +    return true;
 +  }
 +
++  public CompletableFuture<LoginEvent> consumeLoginEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player) {
++    return vg.server.getEventManager().fire(new LoginEvent(player));
++  }
++
++  public CompletableFuture<PostLoginEvent> consumePostLoginEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player) {
++    return vg.server.getEventManager().fire(new PostLoginEvent(player));
++  }
++
++  public CompletableFuture<PlayerChooseInitialServerEvent> consumePlayerChooseInitialServerEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player, RegisteredServer registeredServer) {
++    return vg.server.getEventManager().fire(new PlayerChooseInitialServerEvent(player, registeredServer));
++  }
++
++  public CompletableFuture<CookieReceiveEvent> consumeCookieReceiveEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, @MonotonicNonNull ConnectedPlayer connectedPlayer, Key key, byte[] payload) {
++    return vg.server.getEventManager().fire(new CookieReceiveEvent(connectedPlayer, key, payload));
++  }
++
++  public CompletableFuture<GameProfileRequestEvent> consumeProfileRequestEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, GameProfileRequestEvent profileRequestEvent) {
++    return vg.server.getEventManager().fire(profileRequestEvent);
++  }
++
++  public CompletableFuture<PermissionsSetupEvent> consumePermissionsSetupEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player, PermissionProvider provider) {
++    return vg.server.getEventManager().fire(new PermissionsSetupEvent(player, provider));
++  }
++
++  public CompletableFuture<DisconnectEvent> consumeDisconnectEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player, DisconnectEvent.LoginStatus loginStatus) {
++    return vg.server.getEventManager().fire(new DisconnectEvent(player, loginStatus));
++  }
 +}

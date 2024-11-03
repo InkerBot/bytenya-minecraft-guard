@@ -1,11 +1,10 @@
 api/src/main/java/com/bytenya/minecraft/velocityguard/api/VgServer.java
-api/src/main/java/com/bytenya/minecraft/velocityguard/api/event/VgLoginEvent.java
-api/src/main/java/com/bytenya/minecraft/velocityguard/api/event/VgPlayerChooseInitialServerEvent.java
-api/src/main/java/com/bytenya/minecraft/velocityguard/api/event/VgPostLoginEvent.java
+native/src/main/java/com/velocitypowered/natives/util/Natives.java
 proxy/src/main/java/com/bytenya/minecraft/velocityguard/VelocityGuard.java
 proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgConfig.java
 proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgConnection.java
 proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java
+proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgMain.java
 proxy/src/main/java/com/velocitypowered/proxy/VelocityServer.java
 proxy/src/main/java/com/velocitypowered/proxy/connection/MinecraftConnection.java
 proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java
