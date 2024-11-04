@@ -1,9 +1,9 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java
 new file mode 100644
-index 00000000..23bdff83
+index 00000000..3c8fb8a7
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java
-@@ -0,0 +1,100 @@
+@@ -0,0 +1,109 @@
 +package com.bytenya.minecraft.velocityguard;
 +
 +import com.velocitypowered.api.event.connection.DisconnectEvent;
@@ -15,6 +15,7 @@ index 00000000..23bdff83
 +import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent;
 +import com.velocitypowered.api.permission.PermissionProvider;
 +import com.velocitypowered.api.proxy.server.RegisteredServer;
++import com.velocitypowered.api.proxy.server.ServerInfo;
 +import com.velocitypowered.api.util.GameProfile;
 +import com.velocitypowered.proxy.connection.MinecraftConnection;
 +import com.velocitypowered.proxy.connection.client.AuthSessionHandler;
@@ -85,7 +86,15 @@ index 00000000..23bdff83
 +  }
 +
 +  public CompletableFuture<PlayerChooseInitialServerEvent> consumePlayerChooseInitialServerEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player, RegisteredServer registeredServer) {
-+    return vg.server.getEventManager().fire(new PlayerChooseInitialServerEvent(player, registeredServer));
++    PlayerChooseInitialServerEvent event = new PlayerChooseInitialServerEvent(player, registeredServer);
++
++    event.setInitialServer(vg.server.createRawRegisteredServer(new ServerInfo(
++            "velocity-guard-limbo",
++            vg.limboServer.getBindAddress()
++    )));
++
++    return CompletableFuture.completedFuture(event);
++    // return vg.server.getEventManager().fire(event);
 +  }
 +
 +  public CompletableFuture<CookieReceiveEvent> consumeCookieReceiveEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, @MonotonicNonNull ConnectedPlayer connectedPlayer, Key key, byte[] payload) {

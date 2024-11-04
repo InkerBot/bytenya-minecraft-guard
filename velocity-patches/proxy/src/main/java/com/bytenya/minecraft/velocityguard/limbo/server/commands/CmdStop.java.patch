@@ -1,0 +1,35 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/commands/CmdStop.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/commands/CmdStop.java
+new file mode 100644
+index 00000000..9f34f616
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/commands/CmdStop.java
+@@ -0,0 +1,29 @@
++package com.bytenya.minecraft.velocityguard.limbo.server.commands;
++
++import com.bytenya.minecraft.velocityguard.limbo.server.Command;
++import com.bytenya.minecraft.velocityguard.limbo.server.LimboServer;
++
++public class CmdStop implements Command {
++
++    private final LimboServer server;
++
++    public CmdStop(LimboServer server) {
++        this.server = server;
++    }
++
++    @Override
++    public void execute() {
++        server.stop();
++    }
++
++    @Override
++    public String name() {
++        return "stop";
++    }
++
++    @Override
++    public String description() {
++        return "Stop the server";
++    }
++
++}

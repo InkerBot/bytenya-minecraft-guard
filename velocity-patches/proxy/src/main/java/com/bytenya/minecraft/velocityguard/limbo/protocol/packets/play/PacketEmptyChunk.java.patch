@@ -1,0 +1,53 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketEmptyChunk.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketEmptyChunk.java
+new file mode 100644
+index 00000000..187eb159
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketEmptyChunk.java
+@@ -0,0 +1,47 @@
++package com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play;
++
++import net.kyori.adventure.nbt.CompoundBinaryTag;
++import net.kyori.adventure.nbt.LongArrayBinaryTag;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.ByteMessage;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.PacketOut;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.registry.Version;
++
++public class PacketEmptyChunk implements PacketOut {
++
++    private int x;
++    private int z;
++
++    public void setX(int x) {
++        this.x = x;
++    }
++
++    public void setZ(int z) {
++        this.z = z;
++    }
++
++    @Override
++    public void encode(ByteMessage msg, Version version) {
++        msg.writeInt(x);
++        msg.writeInt(z);
++
++        LongArrayBinaryTag longArrayTag = LongArrayBinaryTag.longArrayBinaryTag(new long[37]);
++        CompoundBinaryTag tag = CompoundBinaryTag.builder()
++                .put("MOTION_BLOCKING", longArrayTag).build();
++        CompoundBinaryTag rootTag = CompoundBinaryTag.builder()
++                .put("root", tag).build();
++        msg.writeNamelessCompoundTag(rootTag);
++
++        byte[] sectionData = new byte[]{0, 0, 0, 0, 0, 0, 1, 0};
++        msg.writeVarInt(sectionData.length * 16);
++        for (int i = 0; i < 16; i++) {
++            msg.writeBytes(sectionData);
++        }
++
++        msg.writeVarInt(0);
++
++        byte[] lightData = new byte[]{1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 3, -1, -1, 0, 0};
++        msg.ensureWritable(lightData.length);
++        msg.writeBytes(lightData, 1, lightData.length - 1);
++    }
++    
++}

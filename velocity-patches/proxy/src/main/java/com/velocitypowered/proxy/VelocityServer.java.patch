@@ -1,5 +1,5 @@
 diff --git a/proxy/src/main/java/com/velocitypowered/proxy/VelocityServer.java b/proxy/src/main/java/com/velocitypowered/proxy/VelocityServer.java
-index cecc440c..112f2b71 100644
+index cecc440c..768e42d1 100644
 --- a/proxy/src/main/java/com/velocitypowered/proxy/VelocityServer.java
 +++ b/proxy/src/main/java/com/velocitypowered/proxy/VelocityServer.java
 @@ -149,6 +149,10 @@ public class VelocityServer implements ProxyServer, ForwardingAudience {
@@ -13,3 +13,29 @@ index cecc440c..112f2b71 100644
    private final ConnectionManager cm;
    private final ProxyOptions options;
    private @MonotonicNonNull VelocityConfiguration configuration;
+@@ -295,6 +299,14 @@ public class VelocityServer implements ProxyServer, ForwardingAudience {
+     // init console permissions after plugins are loaded
+     console.setupPermissions();
+ 
++    // ByteNya start
++    try {
++      vg.limboServer.start();
++    } catch (Exception e) {
++      logger.error("Unable to start LimboServer", e);
++    }
++    // ByteNya end
++
+     final Integer port = this.options.getPort();
+     if (port != null) {
+       logger.debug("Overriding bind port to {} from command line option", port);
+@@ -599,6 +611,10 @@ public class VelocityServer implements ProxyServer, ForwardingAudience {
+         Thread.currentThread().interrupt();
+       }
+ 
++      // ByteNya start
++      vg.limboServer.stop();
++      // ByteNya end
++
+       // Since we manually removed the shutdown hook, we need to handle the shutdown ourselves.
+       LogManager.shutdown();
+ 

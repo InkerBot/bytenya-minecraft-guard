@@ -1,0 +1,41 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/commands/CmdMem.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/commands/CmdMem.java
+new file mode 100644
+index 00000000..42da7096
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/commands/CmdMem.java
+@@ -0,0 +1,35 @@
++package com.bytenya.minecraft.velocityguard.limbo.server.commands;
++
++import com.bytenya.minecraft.velocityguard.limbo.server.Command;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
++
++public class CmdMem implements Command {
++    private static final Logger logger = LogManager.getLogger(CmdMem.class);
++
++    @Override
++    public void execute() {
++        Runtime runtime = Runtime.getRuntime();
++        long mb = 1024 * 1024;
++        long used = (runtime.totalMemory() - runtime.freeMemory()) / mb;
++        long total = runtime.totalMemory() / mb;
++        long free = runtime.freeMemory() / mb;
++        long max = runtime.maxMemory() / mb;
++
++        logger.info("Memory usage:");
++        logger.info("Used: {} MB", used);
++        logger.info("Total: {} MB", total);
++        logger.info("Free: {} MB", free);
++        logger.info("Max: {} MB", max);
++    }
++
++    @Override
++    public String name() {
++        return "mem";
++    }
++
++    @Override
++    public String description() {
++        return "Display memory usage";
++    }
++}

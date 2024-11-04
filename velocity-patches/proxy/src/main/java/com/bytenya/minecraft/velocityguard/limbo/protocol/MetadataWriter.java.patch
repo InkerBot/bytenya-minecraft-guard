@@ -1,0 +1,16 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/MetadataWriter.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/MetadataWriter.java
+new file mode 100644
+index 00000000..e806a206
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/MetadataWriter.java
+@@ -0,0 +1,10 @@
++package com.bytenya.minecraft.velocityguard.limbo.protocol;
++
++import com.bytenya.minecraft.velocityguard.limbo.protocol.registry.Version;
++
++@FunctionalInterface
++public interface MetadataWriter {
++
++    void writeData(ByteMessage message, Version version);
++
++}

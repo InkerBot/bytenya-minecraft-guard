@@ -1,0 +1,48 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/status/PacketStatusRequest.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/status/PacketStatusRequest.java
+new file mode 100644
+index 00000000..2c7f8f6f
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/status/PacketStatusRequest.java
+@@ -0,0 +1,42 @@
++/*
++ * Copyright (C) 2020 Nan1t
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, either version 3 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ */
++
++package com.bytenya.minecraft.velocityguard.limbo.protocol.packets.status;
++
++import com.bytenya.minecraft.velocityguard.limbo.connection.ClientConnection;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.ByteMessage;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.PacketIn;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.registry.Version;
++import com.bytenya.minecraft.velocityguard.limbo.server.LimboServer;
++
++public class PacketStatusRequest implements PacketIn {
++
++    @Override
++    public void decode(ByteMessage msg, Version version) {
++
++    }
++
++    @Override
++    public void handle(ClientConnection conn, LimboServer server) {
++        server.getPacketHandler().handle(conn, this);
++    }
++
++    @Override
++    public String toString() {
++        return getClass().getSimpleName();
++    }
++}

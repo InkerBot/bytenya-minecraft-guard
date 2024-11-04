@@ -1,0 +1,85 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/pipeline/PacketEncoder.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/pipeline/PacketEncoder.java
+new file mode 100644
+index 00000000..1ad09abe
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/pipeline/PacketEncoder.java
+@@ -0,0 +1,79 @@
++/*
++ * Copyright (C) 2020 Nan1t
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, either version 3 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ */
++
++package com.bytenya.minecraft.velocityguard.limbo.connection.pipeline;
++
++import io.netty.buffer.ByteBuf;
++import io.netty.channel.ChannelHandlerContext;
++import io.netty.handler.codec.MessageToByteEncoder;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.ByteMessage;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.Packet;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.PacketSnapshot;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.registry.State;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.registry.Version;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
++
++public class PacketEncoder extends MessageToByteEncoder<Packet> {
++    private static final Logger logger = LogManager.getLogger(PacketEncoder.class);
++
++    private State.PacketRegistry registry;
++    private Version version;
++
++    public PacketEncoder() {
++        updateVersion(Version.getMin());
++        updateState(State.HANDSHAKING);
++    }
++
++    @Override
++    protected void encode(ChannelHandlerContext ctx, Packet packet, ByteBuf out) throws Exception {
++        if (registry == null) return;
++
++        ByteMessage msg = new ByteMessage(out);
++        int packetId;
++
++        if (packet instanceof PacketSnapshot) {
++            packetId = registry.getPacketId(((PacketSnapshot)packet).getWrappedPacket().getClass());
++        } else {
++            packetId = registry.getPacketId(packet.getClass());
++        }
++
++        if (packetId == -1) {
++            logger.warn("Undefined packet class: {}[0x{}] ({} bytes)", packet.getClass().getName(), Integer.toHexString(packetId), msg.readableBytes());
++            return;
++        }
++
++        msg.writeVarInt(packetId);
++
++        try {
++            packet.encode(msg, version);
++
++            logger.debug("Sending {}[0x{}] packet ({} bytes)", packet.toString(), Integer.toHexString(packetId), msg.readableBytes());
++        } catch (Exception e) {
++            logger.error("Cannot encode packet 0x{}: {}", Integer.toHexString(packetId), e.getMessage());
++        }
++    }
++
++    public void updateVersion(Version version) {
++        this.version = version;
++    }
++
++    public void updateState(State state) {
++        this.registry = state.clientBound.getRegistry(version);
++    }
++
++}

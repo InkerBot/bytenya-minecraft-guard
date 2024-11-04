@@ -1,0 +1,77 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/ConsoleCommandHandler.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/ConsoleCommandHandler.java
+new file mode 100644
+index 00000000..368e5300
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/ConsoleCommandHandler.java
+@@ -0,0 +1,71 @@
++package com.bytenya.minecraft.velocityguard.limbo.server;
++
++import com.bytenya.minecraft.velocityguard.limbo.server.commands.CmdConn;
++import com.bytenya.minecraft.velocityguard.limbo.server.commands.CmdHelp;
++import com.bytenya.minecraft.velocityguard.limbo.server.commands.CmdMem;
++import com.bytenya.minecraft.velocityguard.limbo.server.commands.CmdStop;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
++
++import java.util.*;
++
++public final class ConsoleCommandHandler extends Thread implements CommandHandler<Command> {
++    private static final Logger logger = LogManager.getLogger(ConsoleCommandHandler.class);
++
++    private final Map<String, Command> commands = new HashMap<>();
++
++    public Command getCommand(String name) {
++        return commands.get(name.toLowerCase());
++    }
++
++    @Override
++    public void register(Command cmd) {
++        commands.put(cmd.name().toLowerCase(), cmd);
++    }
++
++    @Override
++    public boolean executeCommand(String input) {
++        Command handler = getCommand(input);
++
++        if (handler != null) {
++            try {
++                handler.execute();
++            } catch(Throwable t) {
++                logger.error("Cannot execute command", t);
++            }
++            return true;
++        }
++
++        logger.info("Unknown command. Type \"help\" to get commands list");
++        return false;
++    }
++
++    @Override
++    public Collection<Command> getCommands() {
++        return Collections.unmodifiableCollection(commands.values());
++    }
++
++    @Override
++    public void run() {
++        Scanner scanner = new Scanner(System.in);
++        String command;
++
++        while(true) {
++            try {
++                command = scanner.nextLine().trim();
++            } catch(NoSuchElementException e) {
++                break;
++            }
++
++            executeCommand(command);
++        }
++    }
++
++    public ConsoleCommandHandler registerAll(LimboServer server) {
++        register(new CmdHelp(server));
++        register(new CmdConn(server));
++        register(new CmdMem());
++        register(new CmdStop(server));
++        return this;
++    }
++}

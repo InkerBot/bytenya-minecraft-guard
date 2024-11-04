@@ -1,0 +1,45 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/commands/CmdHelp.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/commands/CmdHelp.java
+new file mode 100644
+index 00000000..22dc80b6
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/commands/CmdHelp.java
+@@ -0,0 +1,39 @@
++package com.bytenya.minecraft.velocityguard.limbo.server.commands;
++
++import java.util.Collection;
++
++import com.bytenya.minecraft.velocityguard.limbo.server.Command;
++import com.bytenya.minecraft.velocityguard.limbo.server.LimboServer;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
++
++public class CmdHelp implements Command {
++    private static final Logger logger = LogManager.getLogger(CmdHelp.class);
++
++    private final LimboServer server;
++
++    public CmdHelp(LimboServer server) {
++        this.server = server;
++    }
++
++    @Override
++    public void execute() {
++        Collection<Command> commands = server.getCommandManager().getCommands();
++
++        logger.info("Available commands:");
++
++        for (Command command : commands) {
++            logger.info("{} - {}", command.name(), command.description());
++        }
++    }
++
++    @Override
++    public String name() {
++        return "help";
++    }
++
++    @Override
++    public String description() {
++        return "Show this message";
++    }
++}

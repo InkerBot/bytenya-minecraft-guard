@@ -1,0 +1,17 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/Command.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/Command.java
+new file mode 100644
+index 00000000..10c05d73
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/Command.java
+@@ -0,0 +1,11 @@
++package com.bytenya.minecraft.velocityguard.limbo.server;
++
++public interface Command {
++
++    void execute();
++
++    String name();
++
++    String description();
++
++}

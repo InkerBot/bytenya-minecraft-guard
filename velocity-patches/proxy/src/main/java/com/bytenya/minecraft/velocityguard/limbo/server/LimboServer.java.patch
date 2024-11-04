@@ -1,0 +1,175 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/LimboServer.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/LimboServer.java
+new file mode 100644
+index 00000000..a274ffa0
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/LimboServer.java
+@@ -0,0 +1,169 @@
++/*
++ * Copyright (C) 2020 Nan1t
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, either version 3 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
++ */
++
++package com.bytenya.minecraft.velocityguard.limbo.server;
++
++import java.net.InetSocketAddress;
++import java.net.SocketAddress;
++import java.util.concurrent.ScheduledFuture;
++import java.util.concurrent.TimeUnit;
++
++import io.netty.bootstrap.ServerBootstrap;
++import io.netty.channel.ChannelFuture;
++import io.netty.channel.ChannelOption;
++import io.netty.channel.EventLoopGroup;
++import io.netty.channel.ServerChannel;
++import io.netty.channel.epoll.Epoll;
++import io.netty.channel.epoll.EpollEventLoopGroup;
++import io.netty.channel.epoll.EpollServerSocketChannel;
++import io.netty.channel.nio.NioEventLoopGroup;
++import io.netty.channel.socket.nio.NioServerSocketChannel;
++import io.netty.util.ResourceLeakDetector;
++import com.bytenya.minecraft.velocityguard.limbo.configuration.LimboConfig;
++import com.bytenya.minecraft.velocityguard.limbo.connection.ClientChannelInitializer;
++import com.bytenya.minecraft.velocityguard.limbo.connection.ClientConnection;
++import com.bytenya.minecraft.velocityguard.limbo.connection.PacketHandler;
++import com.bytenya.minecraft.velocityguard.limbo.connection.PacketSnapshots;
++import com.bytenya.minecraft.velocityguard.limbo.world.DimensionRegistry;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
++
++public final class LimboServer {
++    private static final Logger logger = LogManager.getLogger(LimboServer.class);
++
++    private boolean running = false;
++
++    private PacketHandler packetHandler;
++    private PacketSnapshots packetSnapshots;
++    private Connections connections;
++    private DimensionRegistry dimensionRegistry;
++    private ScheduledFuture<?> keepAliveTask;
++
++    private EventLoopGroup bossGroup;
++    private EventLoopGroup workerGroup;
++    private ChannelFuture channel;
++
++    private final LimboConfig config;
++    private final CommandHandler<Command> commandHandler;
++    private final ClassLoader classLoader;
++
++    public LimboServer(LimboConfig config, CommandHandler<Command> commandHandler, ClassLoader classLoader) {
++        this.config = config;
++        this.commandHandler = commandHandler;
++        this.classLoader = classLoader;
++    }
++
++    public LimboConfig getConfig() {
++        return config;
++    }
++
++    public PacketHandler getPacketHandler() {
++        return packetHandler;
++    }
++
++    public PacketSnapshots getPacketSnapshots() {
++        return packetSnapshots;
++    }
++
++    public Connections getConnections() {
++        return connections;
++    }
++
++    public DimensionRegistry getDimensionRegistry() {
++        return dimensionRegistry;
++    }
++
++    public CommandHandler<Command> getCommandManager() {
++        return commandHandler;
++    }
++
++    public void start() throws Exception {
++        logger.info("Starting LimboServer...");
++
++        ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.DISABLED);
++        packetHandler = new PacketHandler(this);
++        dimensionRegistry = new DimensionRegistry(classLoader);
++        dimensionRegistry.load(config.getDimensionType());
++        connections = new Connections();
++
++        packetSnapshots = new PacketSnapshots(this);
++
++        startBootstrap();
++
++        keepAliveTask = workerGroup.scheduleAtFixedRate(this::broadcastKeepAlive, 0L, 5L, TimeUnit.SECONDS);
++
++        logger.info("LimboServer started on {}", channel.channel().localAddress());
++
++        running = true;
++    }
++
++    private void startBootstrap() throws InterruptedException {
++        Class<? extends ServerChannel> channelClass;
++
++        if (config.isUseEpoll() && Epoll.isAvailable()) {
++            bossGroup = new EpollEventLoopGroup(config.getBossGroupSize());
++            workerGroup = new EpollEventLoopGroup(config.getWorkerGroupSize());
++            channelClass = EpollServerSocketChannel.class;
++            logger.debug("Using Epoll transport type");
++        } else {
++            bossGroup = new NioEventLoopGroup(config.getBossGroupSize());
++            workerGroup = new NioEventLoopGroup(config.getWorkerGroupSize());
++            channelClass = NioServerSocketChannel.class;
++            logger.debug("Using Java NIO transport type");
++        }
++
++        this.channel = new ServerBootstrap()
++                .group(bossGroup, workerGroup)
++                .channel(channelClass)
++                .childHandler(new ClientChannelInitializer(this))
++                .childOption(ChannelOption.TCP_NODELAY, true)
++                .localAddress(config.getAddress())
++                .bind()
++                .sync();
++    }
++
++    private void broadcastKeepAlive() {
++        connections.getAllConnections().forEach(ClientConnection::sendKeepAlive);
++    }
++
++    public InetSocketAddress getBindAddress() {
++        return (InetSocketAddress) channel.channel().localAddress();
++    }
++
++    public void stop() {
++        logger.info("Stopping server...");
++
++        if (keepAliveTask != null) {
++            keepAliveTask.cancel(true);
++        }
++
++        if (bossGroup != null) {
++            bossGroup.shutdownGracefully();
++        }
++
++        if (workerGroup != null) {
++            workerGroup.shutdownGracefully();
++        }
++
++        running = false;
++        logger.info("Server stopped, Goodbye!");
++    }
++
++    public boolean isRunning() {
++        return running;
++    }
++}

@@ -1,0 +1,17 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/CommandHandler.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/CommandHandler.java
+new file mode 100644
+index 00000000..cc2d90de
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/CommandHandler.java
+@@ -0,0 +1,11 @@
++package com.bytenya.minecraft.velocityguard.limbo.server;
++
++import java.util.Collection;
++
++public interface CommandHandler<T> {
++    Collection<Command> getCommands();
++
++    void register(T command);
++
++    boolean executeCommand(String input);
++}

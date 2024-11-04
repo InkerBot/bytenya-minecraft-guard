@@ -1,0 +1,31 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketGameEvent.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketGameEvent.java
+new file mode 100644
+index 00000000..f0637eec
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketGameEvent.java
+@@ -0,0 +1,25 @@
++package com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play;
++
++import com.bytenya.minecraft.velocityguard.limbo.protocol.ByteMessage;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.PacketOut;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.registry.Version;
++
++public class PacketGameEvent implements PacketOut {
++
++    private byte type;
++    private float value;
++
++    public void setType(byte type) {
++        this.type = type;
++    }
++
++    public void setValue(float value) {
++        this.value = value;
++    }
++
++    @Override
++    public void encode(ByteMessage msg, Version version) {
++        msg.writeByte(type);
++        msg.writeFloat(value);
++    }
++}

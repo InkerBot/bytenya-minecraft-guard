@@ -1,0 +1,38 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/configuration/PacketRegistryData.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/configuration/PacketRegistryData.java
+new file mode 100644
+index 00000000..86f41402
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/configuration/PacketRegistryData.java
+@@ -0,0 +1,32 @@
++package com.bytenya.minecraft.velocityguard.limbo.protocol.packets.configuration;
++
++import com.bytenya.minecraft.velocityguard.limbo.protocol.ByteMessage;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.MetadataWriter;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.PacketOut;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.registry.Version;
++import com.bytenya.minecraft.velocityguard.limbo.world.DimensionRegistry;
++
++public class PacketRegistryData implements PacketOut {
++
++    private DimensionRegistry dimensionRegistry;
++    private MetadataWriter metadataWriter;
++
++    public void setDimensionRegistry(DimensionRegistry dimensionRegistry) {
++        this.dimensionRegistry = dimensionRegistry;
++    }
++
++    public void setMetadataWriter(MetadataWriter metadataWriter) {
++        this.metadataWriter = metadataWriter;
++    }
++
++    @Override
++    public void encode(ByteMessage msg, Version version) {
++        if (metadataWriter != null) {
++            if (version.moreOrEqual(Version.V1_20_5)) {
++                metadataWriter.writeData(msg, version);
++                return;
++            }
++        }
++        msg.writeNamelessCompoundTag(dimensionRegistry.getCodec_1_20());
++    }
++}
