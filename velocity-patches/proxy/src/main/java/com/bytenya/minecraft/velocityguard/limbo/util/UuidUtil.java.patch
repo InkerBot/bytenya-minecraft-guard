@@ -1,9 +1,9 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/util/UuidUtil.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/util/UuidUtil.java
 new file mode 100644
-index 00000000..01139d6c
+index 00000000..b082921d
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/util/UuidUtil.java
-@@ -0,0 +1,37 @@
+@@ -0,0 +1,38 @@
 +/*
 + * Copyright (C) 2020 Nan1t
 + *
@@ -28,7 +28,8 @@ index 00000000..01139d6c
 +
 +public final class UuidUtil {
 +
-+    private UuidUtil() {}
++    private UuidUtil() {
++    }
 +
 +    public static UUID getOfflineModeUuid(String username) {
 +        return UUID.nameUUIDFromBytes(("OfflinePlayer:" + username)
@@ -36,7 +37,7 @@ index 00000000..01139d6c
 +    }
 +
 +    public static UUID fromString(String str) {
-+        if(str.contains("-")) return UUID.fromString(str);
++        if (str.contains("-")) return UUID.fromString(str);
 +        return UUID.fromString(str.replaceFirst("(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)", "$1-$2-$3-$4-$5"));
 +    }
 +

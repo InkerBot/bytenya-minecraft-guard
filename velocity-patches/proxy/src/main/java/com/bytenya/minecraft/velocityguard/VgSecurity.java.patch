@@ -1,0 +1,22 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgSecurity.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgSecurity.java
+new file mode 100644
+index 00000000..4cf9bce8
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgSecurity.java
+@@ -0,0 +1,16 @@
++package com.bytenya.minecraft.velocityguard;
++
++import java.util.concurrent.CompletableFuture;
++
++public class VgSecurity {
++    private final VelocityGuard velocityGuard;
++
++    public VgSecurity(VelocityGuard velocityGuard) {
++        this.velocityGuard = velocityGuard;
++    }
++
++    public CompletableFuture<Void> check(VgConnection vgConnection) {
++        vgConnection.trustLevel = 1000;
++        return CompletableFuture.completedFuture(null);
++    }
++}

@@ -1,6 +1,6 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/data/BossBar.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/data/BossBar.java
 new file mode 100644
-index 00000000..976d1cd0
+index 00000000..2ffd726d
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/data/BossBar.java
 @@ -0,0 +1,141 @@
@@ -23,13 +23,13 @@ index 00000000..976d1cd0
 +
 +package com.bytenya.minecraft.velocityguard.limbo.server.data;
 +
++import com.bytenya.minecraft.velocityguard.limbo.protocol.NbtMessage;
++import com.bytenya.minecraft.velocityguard.limbo.util.Colors;
++import com.bytenya.minecraft.velocityguard.limbo.util.NbtMessageUtil;
 +import org.checkerframework.checker.nullness.qual.Nullable;
 +import org.spongepowered.configurate.ConfigurationNode;
 +import org.spongepowered.configurate.serialize.SerializationException;
 +import org.spongepowered.configurate.serialize.TypeSerializer;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.NbtMessage;
-+import com.bytenya.minecraft.velocityguard.limbo.util.Colors;
-+import com.bytenya.minecraft.velocityguard.limbo.util.NbtMessageUtil;
 +
 +import java.lang.reflect.Type;
 +
@@ -44,28 +44,28 @@ index 00000000..976d1cd0
 +        return text;
 +    }
 +
-+    public float getHealth() {
-+        return health;
-+    }
-+
-+    public Color getColor() {
-+        return color;
-+    }
-+
-+    public Division getDivision() {
-+        return division;
-+    }
-+
 +    public void setText(NbtMessage text) {
 +        this.text = text;
++    }
++
++    public float getHealth() {
++        return health;
 +    }
 +
 +    public void setHealth(float health) {
 +        this.health = health;
 +    }
 +
++    public Color getColor() {
++        return color;
++    }
++
 +    public void setColor(Color color) {
 +        this.color = color;
++    }
++
++    public Division getDivision() {
++        return division;
 +    }
 +
 +    public void setDivision(Division division) {

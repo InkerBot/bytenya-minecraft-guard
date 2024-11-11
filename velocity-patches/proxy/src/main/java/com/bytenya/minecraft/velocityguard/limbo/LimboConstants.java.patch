@@ -1,9 +1,9 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/LimboConstants.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/LimboConstants.java
 new file mode 100644
-index 00000000..95dcaf60
+index 00000000..58dd8baa
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/LimboConstants.java
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,28 @@
 +/*
 + * Copyright (C) 2020 Nan1t
 + *
@@ -25,9 +25,10 @@ index 00000000..95dcaf60
 +
 +public final class LimboConstants {
 +
-+  public static final String VELOCITY_INFO_CHANNEL = "velocity:player_info";
-+  public static final String BRAND_CHANNEL = "minecraft:brand";
++    public static final String VELOCITY_INFO_CHANNEL = "velocity:player_info";
++    public static final String BRAND_CHANNEL = "minecraft:brand";
 +
-+  private LimboConstants() {}
++    private LimboConstants() {
++    }
 +
 +}

@@ -1,0 +1,57 @@
+diff --git a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/ConnectedPlayer.java b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/ConnectedPlayer.java
+index 46c3d63d..ee528b32 100644
+--- a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/ConnectedPlayer.java
++++ b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/ConnectedPlayer.java
+@@ -22,6 +22,7 @@ import static com.velocitypowered.proxy.connection.util.ConnectionRequestResults
+ import static java.util.Objects.requireNonNull;
+ import static java.util.concurrent.CompletableFuture.completedFuture;
+ 
++import com.bytenya.minecraft.velocityguard.VgConnection;
+ import com.google.common.base.Preconditions;
+ import com.google.gson.JsonObject;
+ import com.velocitypowered.api.event.connection.DisconnectEvent;
+@@ -156,7 +157,9 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player,
+   private final MinecraftConnection connection;
+   private final @Nullable InetSocketAddress virtualHost;
+   private final @Nullable String rawVirtualHost;
+-  private GameProfile profile;
++  // ByteNya start
++  public GameProfile profile;
++  // ByteNya end
+   private PermissionFunction permissionFunction;
+   private int tryIndex = 0;
+   private long ping = -1;
+@@ -194,6 +197,9 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player,
+   ConnectedPlayer(VelocityServer server, GameProfile profile, MinecraftConnection connection,
+                   @Nullable InetSocketAddress virtualHost, @Nullable String rawVirtualHost, boolean onlineMode,
+                   @Nullable IdentifiedKey playerKey) {
++    // ByteNya start
++    connection.vgConnection.connectedPlayer = this;
++    // ByteNya end
+     this.server = server;
+     this.profile = profile;
+     this.connection = connection;
+@@ -631,8 +637,11 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player,
+     if (server.getConfiguration().isLogPlayerConnections()) {
+       logger.info(Component.text(this + " has disconnected: ").append(translated));
+     }
+-    connection.closeWith(DisconnectPacket.create(translated,
++    // ByteNya start
++    connection.closeWith(DisconnectPacket.create(
++            server.vg.eventFactory.processDisconnectMessage(connection, translated),
+             this.getProtocolVersion(), connection.getState()));
++    // ByteNya end
+   }
+ 
+   public @Nullable VelocityServerConnection getConnectedServer() {
+@@ -964,7 +973,9 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player,
+         .isPlayerAddressLoggingEnabled();
+     final String playerIp =
+         isPlayerAddressLoggingEnabled ? getRemoteAddress().toString() : "<ip address withheld>";
+-    return "[connected player] " + profile.getName() + " (" + playerIp + ")";
++    // ByteNya start
++    return "[connected player] " + profile.getName() + " (" + playerIp + ", " + connection.vgConnection.sessionId + ")";
++    // ByteNya end
+   }
+ 
+   @Override

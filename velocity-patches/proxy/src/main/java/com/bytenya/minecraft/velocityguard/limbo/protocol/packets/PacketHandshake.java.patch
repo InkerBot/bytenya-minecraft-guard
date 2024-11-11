@@ -1,6 +1,6 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/PacketHandshake.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/PacketHandshake.java
 new file mode 100644
-index 00000000..804c1469
+index 00000000..7090ed02
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/PacketHandshake.java
 @@ -0,0 +1,72 @@
@@ -57,7 +57,7 @@ index 00000000..804c1469
 +    public void decode(ByteMessage msg, Version version) {
 +        try {
 +            this.version = Version.of(msg.readVarInt());
-+        } catch(IllegalArgumentException e) {
++        } catch (IllegalArgumentException e) {
 +            this.version = Version.UNDEFINED;
 +        }
 +

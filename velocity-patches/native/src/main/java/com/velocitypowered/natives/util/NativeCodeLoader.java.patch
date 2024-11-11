@@ -1,0 +1,14 @@
+diff --git a/native/src/main/java/com/velocitypowered/natives/util/NativeCodeLoader.java b/native/src/main/java/com/velocitypowered/natives/util/NativeCodeLoader.java
+index 04e2b2cf..6e9a4639 100644
+--- a/native/src/main/java/com/velocitypowered/natives/util/NativeCodeLoader.java
++++ b/native/src/main/java/com/velocitypowered/natives/util/NativeCodeLoader.java
+@@ -87,6 +87,9 @@ public final class NativeCodeLoader<T> implements Supplier<T> {
+           constructed = object.get();
+           status = Status.SETUP;
+         } catch (Exception e) {
++          // ByteNya start
++          e.printStackTrace();
++          // ByteNya end
+           status = Status.SETUP_FAILURE;
+           return null;
+         }

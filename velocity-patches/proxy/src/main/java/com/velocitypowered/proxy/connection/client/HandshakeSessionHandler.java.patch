@@ -1,0 +1,21 @@
+diff --git a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/HandshakeSessionHandler.java b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/HandshakeSessionHandler.java
+index f31e0812..f518c1e6 100644
+--- a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/HandshakeSessionHandler.java
++++ b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/HandshakeSessionHandler.java
+@@ -78,10 +78,12 @@ public class HandshakeSessionHandler implements MinecraftSessionHandler {
+ 
+   @Override
+   public boolean handle(LegacyHandshakePacket packet) {
+-    connection.closeWith(LegacyDisconnect.from(Component.text(
+-        "Your client is extremely old. Please update to a newer version of Minecraft.",
+-        NamedTextColor.RED)
+-    ));
++    // ByteNya start
++    connection.closeWith(LegacyDisconnect.from(server.vg.eventFactory.processDisconnectMessage(connection, Component.text(
++                "Your client is extremely old. Please update to a newer version of Minecraft.",
++                NamedTextColor.RED
++    ))));
++    // ByteNya end
+     return true;
+   }
+ 

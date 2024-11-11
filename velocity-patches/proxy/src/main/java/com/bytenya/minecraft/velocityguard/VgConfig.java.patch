@@ -1,35 +1,46 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgConfig.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgConfig.java
 new file mode 100644
-index 00000000..d6e85544
+index 00000000..afa31e95
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgConfig.java
-@@ -0,0 +1,29 @@
+@@ -0,0 +1,40 @@
 +package com.bytenya.minecraft.velocityguard;
 +
++import com.google.gson.Gson;
++import com.google.gson.GsonBuilder;
 +import com.velocitypowered.api.util.GameProfile;
 +import org.apache.logging.log4j.LogManager;
 +import org.apache.logging.log4j.Logger;
 +
 +import java.io.IOException;
++import java.io.Reader;
++import java.nio.file.Files;
 +import java.nio.file.Path;
-+import java.util.Collections;
 +import java.util.List;
 +
 +public class VgConfig {
-+  private static final Logger logger = LogManager.getLogger(VgConfig.class);
-+  public final List<GameProfile.Property> unloginedProperties;
++    private static final Logger logger = LogManager.getLogger(VgConfig.class);
++    public List<GameProfile.Property> unloginedProperties;
++    public boolean sendBrandName;
 +
-+  public VgConfig(List<GameProfile.Property> unloginedProperties) {
-+    this.unloginedProperties = unloginedProperties;
-+  }
++    /**
++     * trust level for direct offline login
++     */
++    public int directOfflineLoginTrustLevel;
++    /**
++     * trust level for direct online login
++     */
++    public int directOnlineLoginTrustLevel;
 +
-+  public boolean validate() {
-+    return true;
-+  }
++    public static VgConfig read(Path path) throws IOException {
++        Gson gson = new GsonBuilder().disableHtmlEscaping()
++                .create();
++        try (Reader reader = Files.newBufferedReader(path)) {
++            return gson.fromJson(reader, VgConfig.class);
++        }
++    }
 +
-+  public static VgConfig read(Path path) throws IOException {
-+    return new VgConfig(
-+        Collections.emptyList()
-+    );
-+  }
++    public boolean validate() {
++        return true;
++    }
 +}

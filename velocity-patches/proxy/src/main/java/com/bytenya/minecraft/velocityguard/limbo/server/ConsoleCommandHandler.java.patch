@@ -1,6 +1,6 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/ConsoleCommandHandler.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/ConsoleCommandHandler.java
 new file mode 100644
-index 00000000..368e5300
+index 00000000..929b2463
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/ConsoleCommandHandler.java
 @@ -0,0 +1,71 @@
@@ -36,7 +36,7 @@ index 00000000..368e5300
 +        if (handler != null) {
 +            try {
 +                handler.execute();
-+            } catch(Throwable t) {
++            } catch (Throwable t) {
 +                logger.error("Cannot execute command", t);
 +            }
 +            return true;
@@ -56,10 +56,10 @@ index 00000000..368e5300
 +        Scanner scanner = new Scanner(System.in);
 +        String command;
 +
-+        while(true) {
++        while (true) {
 +            try {
 +                command = scanner.nextLine().trim();
-+            } catch(NoSuchElementException e) {
++            } catch (NoSuchElementException e) {
 +                break;
 +            }
 +

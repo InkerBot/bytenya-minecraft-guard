@@ -1,31 +1,68 @@
 diff --git a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/InitialLoginSessionHandler.java b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/InitialLoginSessionHandler.java
-index 00187d34..96bae311 100644
+index 00187d34..f47539af 100644
 --- a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/InitialLoginSessionHandler.java
 +++ b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/InitialLoginSessionHandler.java
-@@ -150,6 +150,10 @@ public class InitialLoginSessionHandler implements MinecraftSessionHandler {
+@@ -120,8 +120,11 @@ public class InitialLoginSessionHandler implements MinecraftSessionHandler {
+     inbound.setPlayerKey(playerKey);
+     this.login = packet;
+ 
+-    final PreLoginEvent event = new PreLoginEvent(inbound, login.getUsername(), login.getHolderUuid());
+-    server.getEventManager().fire(event).thenRunAsync(() -> {
++    // ByteNya start
++    // final PreLoginEvent event = new PreLoginEvent(inbound, login.getUsername(), login.getHolderUuid());
++    // server.getEventManager().fire(event).thenRunAsync(() -> {
++    server.vg.eventFactory.consumePreLoginEvent(this, inbound, login.getUsername(), login.getHolderUuid()).thenAcceptAsync(event -> {
++    // ByteNya end
+       if (mcConnection.isClosed()) {
+         // The player was disconnected
+         return;
+@@ -150,9 +153,17 @@ public class InitialLoginSessionHandler implements MinecraftSessionHandler {
              mcConnection.write(request);
              this.currentState = LoginState.ENCRYPTION_REQUEST_SENT;
            } else {
+-            mcConnection.setActiveSessionHandler(StateRegistry.LOGIN,
+-                new AuthSessionHandler(server, inbound,
+-                    GameProfile.forOfflinePlayer(login.getUsername()), false));
 +            // ByteNya start
 +            // return true if go normal offline authorize
-+            if (!server.vg.eventFactory.consumePlayerOfflineEvent(mcConnection, inbound, login)) return;
++            server.vg.eventFactory.consumePlayerOfflineEvent(mcConnection, inbound, login)
++                .thenAcceptAsync(goNormalLogin -> {
++                  if (goNormalLogin) {
++                    mcConnection.setActiveSessionHandler(StateRegistry.LOGIN, new AuthSessionHandler(
++                            server, inbound, GameProfile.forOfflinePlayer(login.getUsername()), false));
++                  }
++                },
++                mcConnection.eventLoop());
 +            // ByteNya end
-             mcConnection.setActiveSessionHandler(StateRegistry.LOGIN,
-                 new AuthSessionHandler(server, inbound,
-                     GameProfile.forOfflinePlayer(login.getUsername()), false));
-@@ -201,6 +205,11 @@ public class InitialLoginSessionHandler implements MinecraftSessionHandler {
+           }
+         });
+       });
+@@ -201,6 +212,24 @@ public class InitialLoginSessionHandler implements MinecraftSessionHandler {
        byte[] decryptedSharedSecret = decryptRsa(serverKeyPair, packet.getSharedSecret());
        String serverId = generateServerId(decryptedSharedSecret, serverKeyPair.getPublic());
  
-+      // ByteNya start
-+      // return true if go normal online authorize, false handle by vg self
-+      if (!server.vg.eventFactory.consumePlayerOnlineEvent(mcConnection, inbound, login.getUsername(), serverId)) return true;
-+      // ByteNya end
++    // ByteNya start
++    // return true if go normal online authorize, false handle by vg self
++      server.vg.eventFactory.consumePlayerOnlineEvent(mcConnection, inbound, login.getUsername(), decryptedSharedSecret, serverId).thenAcceptAsync(goNormalLogin -> {
++        if (goNormalLogin) {
++          goNormalOnlineAuth(serverId, decryptedSharedSecret);
++        }
++      }, mcConnection.eventLoop());
++    } catch (GeneralSecurityException e) {
++      logger.error("Unable to enable encryption", e);
++      mcConnection.close(true);
++    }
++    return true;
++  }
++
++  private boolean goNormalOnlineAuth(String serverId, byte[] decryptedSharedSecret) {
++    // try {
++    // ByteNya end
 +
        String playerIp = ((InetSocketAddress) mcConnection.getRemoteAddress()).getHostString();
        String url = String.format(MOJANG_HASJOINED_URL,
            urlFormParameterEscaper().escape(login.getUsername()), serverId);
-@@ -252,6 +261,10 @@ public class InitialLoginSessionHandler implements MinecraftSessionHandler {
+@@ -252,6 +281,10 @@ public class InitialLoginSessionHandler implements MinecraftSessionHandler {
                        Component.translatable("multiplayer.disconnect.invalid_public_key"));
                  }
                }
@@ -36,3 +73,20 @@ index 00187d34..96bae311 100644
                // All went well, initialize the session.
                mcConnection.setActiveSessionHandler(StateRegistry.LOGIN,
                    new AuthSessionHandler(server, inbound, profile, true));
+@@ -278,10 +311,12 @@ public class InitialLoginSessionHandler implements MinecraftSessionHandler {
+               }
+             }
+           });
+-    } catch (GeneralSecurityException e) {
+-      logger.error("Unable to enable encryption", e);
+-      mcConnection.close(true);
+-    }
++    // ByteNya start
++    // } catch (GeneralSecurityException e) {
++    //   logger.error("Unable to enable encryption", e);
++    //   mcConnection.close(true);
++    // }
++    // ByteNya end
+     return true;
+   }
+ 

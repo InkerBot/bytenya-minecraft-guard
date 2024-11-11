@@ -1,25 +1,19 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/util/NbtMessageUtil.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/util/NbtMessageUtil.java
 new file mode 100644
-index 00000000..dde61979
+index 00000000..0597dcf9
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/util/NbtMessageUtil.java
-@@ -0,0 +1,116 @@
+@@ -0,0 +1,109 @@
 +package com.bytenya.minecraft.velocityguard.limbo.util;
++
++import com.bytenya.minecraft.velocityguard.limbo.protocol.NbtMessage;
++import com.google.gson.*;
++import net.kyori.adventure.nbt.*;
 +
 +import java.util.ArrayList;
 +import java.util.Collections;
 +import java.util.List;
 +import java.util.Map;
-+
-+import com.google.gson.JsonArray;
-+import com.google.gson.JsonElement;
-+import com.google.gson.JsonNull;
-+import com.google.gson.JsonObject;
-+import com.google.gson.JsonParser;
-+import com.google.gson.JsonPrimitive;
-+
-+import net.kyori.adventure.nbt.*;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.NbtMessage;
 +
 +public class NbtMessageUtil {
 +
@@ -30,8 +24,7 @@ index 00000000..dde61979
 +    }
 +
 +    public static BinaryTag fromJson(JsonElement json) {
-+        if (json instanceof JsonPrimitive) {
-+            JsonPrimitive jsonPrimitive = (JsonPrimitive) json;
++        if (json instanceof JsonPrimitive jsonPrimitive) {
 +            if (jsonPrimitive.isNumber()) {
 +                Number number = json.getAsNumber();
 +

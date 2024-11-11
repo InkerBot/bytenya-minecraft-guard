@@ -1,9 +1,9 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/world/DimensionRegistry.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/world/DimensionRegistry.java
 new file mode 100644
-index 00000000..025c76bd
+index 00000000..4ee77e02
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/world/DimensionRegistry.java
-@@ -0,0 +1,172 @@
+@@ -0,0 +1,168 @@
 +/*
 + * Copyright (C) 2020 Nan1t
 + *
@@ -23,19 +23,15 @@ index 00000000..025c76bd
 +
 +package com.bytenya.minecraft.velocityguard.limbo.world;
 +
-+import java.io.BufferedReader;
-+import java.io.FileNotFoundException;
-+import java.io.IOException;
-+import java.io.InputStream;
-+import java.io.InputStreamReader;
-+import java.nio.charset.StandardCharsets;
-+import java.util.stream.Collectors;
-+
 +import net.kyori.adventure.nbt.CompoundBinaryTag;
 +import net.kyori.adventure.nbt.ListBinaryTag;
 +import net.kyori.adventure.nbt.TagStringIO;
 +import org.apache.logging.log4j.LogManager;
 +import org.apache.logging.log4j.Logger;
++
++import java.io.*;
++import java.nio.charset.StandardCharsets;
++import java.util.stream.Collectors;
 +
 +public final class DimensionRegistry {
 +    private static final Logger logger = LogManager.getLogger(DimensionRegistry.class);

@@ -1,0 +1,15 @@
+diff --git a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/ClientPlaySessionHandler.java b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/ClientPlaySessionHandler.java
+index b41a24cc..46946e77 100644
+--- a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/ClientPlaySessionHandler.java
++++ b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/ClientPlaySessionHandler.java
+@@ -166,6 +166,10 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
+       PluginMessagePacket register = constructChannelsPacket(player.getProtocolVersion(), channels);
+       player.getConnection().write(register);
+     }
++
++    if (server.vg.config.sendBrandName) {
++      player.getConnection().write(server.vg.eventFactory.createBrandPluginMessagePacket(player));
++    }
+   }
+ 
+   @Override

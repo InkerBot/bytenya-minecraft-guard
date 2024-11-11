@@ -1,9 +1,9 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/status/PacketStatusResponse.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/status/PacketStatusResponse.java
 new file mode 100644
-index 00000000..5e129ae4
+index 00000000..60bfbdd3
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/status/PacketStatusResponse.java
-@@ -0,0 +1,66 @@
+@@ -0,0 +1,67 @@
 +/*
 + * Copyright (C) 2020 Nan1t
 + *
@@ -34,7 +34,8 @@ index 00000000..5e129ae4
 +
 +    private LimboServer server;
 +
-+    public PacketStatusResponse() { }
++    public PacketStatusResponse() {
++    }
 +
 +    public PacketStatusResponse(LimboServer server) {
 +        this.server = server;
@@ -43,7 +44,7 @@ index 00000000..5e129ae4
 +    @Override
 +    public void encode(ByteMessage msg, Version version) {
 +        int protocol;
-+        int staticProtocol =  server.getConfig().getPingData().getProtocol();
++        int staticProtocol = server.getConfig().getPingData().getProtocol();
 +
 +        if (staticProtocol > 0) {
 +            protocol = staticProtocol;

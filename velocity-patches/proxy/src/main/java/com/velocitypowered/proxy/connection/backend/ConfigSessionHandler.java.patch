@@ -1,0 +1,19 @@
+diff --git a/proxy/src/main/java/com/velocitypowered/proxy/connection/backend/ConfigSessionHandler.java b/proxy/src/main/java/com/velocitypowered/proxy/connection/backend/ConfigSessionHandler.java
+index 74f0576c..8a1f52e7 100644
+--- a/proxy/src/main/java/com/velocitypowered/proxy/connection/backend/ConfigSessionHandler.java
++++ b/proxy/src/main/java/com/velocitypowered/proxy/connection/backend/ConfigSessionHandler.java
+@@ -257,9 +257,11 @@ public class ConfigSessionHandler implements MinecraftSessionHandler {
+   @Override
+   public boolean handle(PluginMessagePacket packet) {
+     if (PluginMessageUtil.isMcBrand(packet)) {
+-      serverConn.getPlayer().getConnection().write(
+-          PluginMessageUtil.rewriteMinecraftBrand(packet, server.getVersion(),
+-              serverConn.getPlayer().getProtocolVersion()));
++      // ByteNya start
++      // serverConn.getPlayer().getConnection().write(
++      //     PluginMessageUtil.rewriteMinecraftBrand(packet, server.getVersion(),
++      //         serverConn.getPlayer().getProtocolVersion()));
++      // ByteNya end
+     } else {
+       serverConn.getPlayer().getConnection().write(packet.retain());
+     }

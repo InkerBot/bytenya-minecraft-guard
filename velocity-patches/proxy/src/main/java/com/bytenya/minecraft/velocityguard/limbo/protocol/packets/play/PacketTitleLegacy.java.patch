@@ -1,6 +1,6 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketTitleLegacy.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketTitleLegacy.java
 new file mode 100644
-index 00000000..9687f57b
+index 00000000..af514de7
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketTitleLegacy.java
 @@ -0,0 +1,90 @@
@@ -30,10 +30,10 @@ index 00000000..9687f57b
 +
 +public class PacketTitleLegacy implements PacketOut {
 +
-+    private Action action;
 +    private final PacketTitleSetTitle title;
 +    private final PacketTitleSetSubTitle subtitle;
 +    private final PacketTitleTimes times;
++    private Action action;
 +
 +    public PacketTitleLegacy() {
 +        this.title = new PacketTitleSetTitle();

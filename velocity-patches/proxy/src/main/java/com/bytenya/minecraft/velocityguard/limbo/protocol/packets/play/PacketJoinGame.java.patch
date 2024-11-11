@@ -1,9 +1,9 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketJoinGame.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketJoinGame.java
 new file mode 100644
-index 00000000..c96ed879
+index 00000000..5d5649de
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketJoinGame.java
-@@ -0,0 +1,305 @@
+@@ -0,0 +1,303 @@
 +/*
 + * Copyright (C) 2020 Nan1t
 + *
@@ -225,12 +225,10 @@ index 00000000..c96ed879
 +            if (version.moreOrEqual(Version.V1_19_1)) {
 +                if (version.moreOrEqual(Version.V1_19_4)) {
 +                    msg.writeCompoundTag(dimensionRegistry.getCodec_1_19_4());
-+                }
-+                else {
++                } else {
 +                    msg.writeCompoundTag(dimensionRegistry.getCodec_1_19_1());
 +                }
-+            }
-+            else {
++            } else {
 +                msg.writeCompoundTag(dimensionRegistry.getCodec_1_19());
 +            }
 +            msg.writeString(worldName); // World type

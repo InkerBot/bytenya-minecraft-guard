@@ -1,18 +1,20 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java
 new file mode 100644
-index 00000000..3c8fb8a7
+index 00000000..2a752a11
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgEventFactory.java
-@@ -0,0 +1,109 @@
+@@ -0,0 +1,241 @@
 +package com.bytenya.minecraft.velocityguard;
 +
 +import com.velocitypowered.api.event.connection.DisconnectEvent;
 +import com.velocitypowered.api.event.connection.LoginEvent;
 +import com.velocitypowered.api.event.connection.PostLoginEvent;
++import com.velocitypowered.api.event.connection.PreLoginEvent;
 +import com.velocitypowered.api.event.permission.PermissionsSetupEvent;
 +import com.velocitypowered.api.event.player.CookieReceiveEvent;
 +import com.velocitypowered.api.event.player.GameProfileRequestEvent;
 +import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent;
++import com.velocitypowered.api.network.ProtocolVersion;
 +import com.velocitypowered.api.permission.PermissionProvider;
 +import com.velocitypowered.api.proxy.server.RegisteredServer;
 +import com.velocitypowered.api.proxy.server.ServerInfo;
@@ -20,96 +22,226 @@ index 00000000..3c8fb8a7
 +import com.velocitypowered.proxy.connection.MinecraftConnection;
 +import com.velocitypowered.proxy.connection.client.AuthSessionHandler;
 +import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
++import com.velocitypowered.proxy.connection.client.InitialLoginSessionHandler;
 +import com.velocitypowered.proxy.connection.client.LoginInboundConnection;
++import com.velocitypowered.proxy.protocol.MinecraftPacket;
++import com.velocitypowered.proxy.protocol.ProtocolUtils;
 +import com.velocitypowered.proxy.protocol.StateRegistry;
++import com.velocitypowered.proxy.protocol.packet.PluginMessagePacket;
++import com.velocitypowered.proxy.protocol.packet.RemovePlayerInfoPacket;
 +import com.velocitypowered.proxy.protocol.packet.ServerLoginPacket;
++import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfoPacket;
++import io.netty.buffer.ByteBuf;
++import io.netty.buffer.Unpooled;
 +import net.kyori.adventure.key.Key;
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.TextComponent;
++import net.kyori.adventure.text.format.NamedTextColor;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
 +import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
++import org.checkerframework.checker.nullness.qual.Nullable;
 +
++import java.nio.charset.StandardCharsets;
++import java.security.GeneralSecurityException;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.UUID;
 +import java.util.concurrent.CompletableFuture;
 +
 +public class VgEventFactory {
++    private static final Logger logger = LogManager.getLogger(VgEventFactory.class);
 +
-+  private final VelocityGuard vg;
++    private final VelocityGuard vg;
 +
-+  public VgEventFactory(VelocityGuard vg) {
-+    this.vg = vg;
-+  }
-+
-+  // return true if go normal offline authorize
-+  public boolean consumePlayerOfflineEvent(MinecraftConnection mcConnection, LoginInboundConnection inbound, ServerLoginPacket login) {
-+    mcConnection.vgConnection.computeRequestUsername(login.getUsername());
-+
-+    if (false) {
-+      mcConnection.setActiveSessionHandler(StateRegistry.LOGIN,
-+          new AuthSessionHandler(vg.server, inbound,
-+              GameProfile.forOfflinePlayer(login.getUsername()), false));
-+      return false;
++    public VgEventFactory(VelocityGuard vg) {
++        this.vg = vg;
 +    }
 +
-+    return true;
-+  }
++    // return true if go normal offline authorize
++    public CompletableFuture<Boolean> consumePlayerOfflineEvent(MinecraftConnection mcConnection, LoginInboundConnection inbound, ServerLoginPacket login) {
++        VgConnection vgConnection = mcConnection.vgConnection;
++        vgConnection.computeRequestUsername(login.getUsername());
 +
-+  // return true if go normal online authorize
-+  public boolean consumePlayerOnlineEvent(MinecraftConnection mcConnection, LoginInboundConnection inbound, String username, String serverId) {
-+    mcConnection.vgConnection.computeRequestUsername(username);
-+    mcConnection.vgConnection.computeServerId(serverId);
-+
-+    if (false) {
-+      mcConnection.setActiveSessionHandler(StateRegistry.LOGIN,
-+          new AuthSessionHandler(vg.server, inbound, mcConnection.vgConnection.unloginedProfile, true));
-+      return false;
++        return vg.security.check(vgConnection).thenApply(ignored -> {
++            if (vgConnection.canTrust(vg.config.directOfflineLoginTrustLevel)) {
++                vgConnection.earlyTrust = true;
++                return true;
++            } else {
++                mcConnection.setActiveSessionHandler(StateRegistry.LOGIN,
++                        new AuthSessionHandler(vg.server, inbound, vgConnection.unloginedProfile, false)
++                );
++                return false;
++            }
++        });
 +    }
 +
-+    return true;
-+  }
++    // return true if go normal online authorize
++    public CompletableFuture<Boolean> consumePlayerOnlineEvent(MinecraftConnection mcConnection, LoginInboundConnection inbound, String username, byte[] decryptedSharedSecret, String serverId) {
++        VgConnection vgConnection = mcConnection.vgConnection;
++        mcConnection.vgConnection.computeRequestUsername(username);
++        mcConnection.vgConnection.computeServerId(serverId);
 +
-+  // return true if trust the profile, false verify later
-+  public boolean consumePlayerOnlineProfileEvent(MinecraftConnection mcConnection, LoginInboundConnection inbound, GameProfile profile) {
-+    mcConnection.vgConnection.computeOnlineProfile(profile);
++        return vg.security.check(vgConnection).thenApply(ignored -> {
++            if (vgConnection.canTrust(vg.config.directOnlineLoginTrustLevel)) {
++                return true;
++            } else {
++                // Go ahead and enable encryption. Once the client sends EncryptionResponse, encryption
++                // is enabled.
++                try {
++                    mcConnection.enableEncryption(decryptedSharedSecret);
++                } catch (GeneralSecurityException e) {
++                    logger.error("Unable to enable encryption for connection", e);
++                    // At this point, the connection is encrypted, but something's wrong on our side and
++                    // we can't do anything about it.
++                    mcConnection.close(true);
++                    return false;
++                }
 +
-+    if (false) {
-+      mcConnection.setActiveSessionHandler(StateRegistry.LOGIN,
-+          new AuthSessionHandler(vg.server, inbound, mcConnection.vgConnection.unloginedProfile, true));
-+      return false;
++                mcConnection.setActiveSessionHandler(StateRegistry.LOGIN,
++                        new AuthSessionHandler(vg.server, inbound, mcConnection.vgConnection.unloginedProfile, true));
++                return false;
++            }
++        });
 +    }
 +
-+    return true;
-+  }
++    // return true if trust the profile, false verify later
++    public boolean consumePlayerOnlineProfileEvent(MinecraftConnection mcConnection, LoginInboundConnection inbound, GameProfile profile) {
++        mcConnection.vgConnection.computeOnlineProfile(profile);
 +
-+  public CompletableFuture<LoginEvent> consumeLoginEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player) {
-+    return vg.server.getEventManager().fire(new LoginEvent(player));
-+  }
++        // mcConnection.setActiveSessionHandler(StateRegistry.LOGIN,
++        //         new AuthSessionHandler(vg.server, inbound, mcConnection.vgConnection.unloginedProfile, true));
++        // return false;
 +
-+  public CompletableFuture<PostLoginEvent> consumePostLoginEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player) {
-+    return vg.server.getEventManager().fire(new PostLoginEvent(player));
-+  }
++        return true;
++    }
 +
-+  public CompletableFuture<PlayerChooseInitialServerEvent> consumePlayerChooseInitialServerEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player, RegisteredServer registeredServer) {
-+    PlayerChooseInitialServerEvent event = new PlayerChooseInitialServerEvent(player, registeredServer);
++    public TextComponent processDisconnectMessage(MinecraftConnection mcConnection, Component component) {
++        return Component.text()
++                .append(component)
++                .appendNewline()
++                .appendNewline()
++                .append(Component.text("ByteNya Guard(" + mcConnection.vgConnection.sessionId + ")").color(NamedTextColor.DARK_GRAY))
++                .build();
++    }
 +
-+    event.setInitialServer(vg.server.createRawRegisteredServer(new ServerInfo(
-+            "velocity-guard-limbo",
-+            vg.limboServer.getBindAddress()
-+    )));
++    public PluginMessagePacket createBrandPluginMessagePacket(ConnectedPlayer player) {
++        ProtocolVersion protocolVersion = player.getProtocolVersion();
++        String rewrittenBrand = "ByteNya Guard (" + player.getConnection().vgConnection.sessionId + ")";
 +
-+    return CompletableFuture.completedFuture(event);
-+    // return vg.server.getEventManager().fire(event);
-+  }
++        ByteBuf rewrittenBuf = Unpooled.buffer();
++        if (protocolVersion.noLessThan(ProtocolVersion.MINECRAFT_1_8)) {
++            ProtocolUtils.writeString(rewrittenBuf, rewrittenBrand);
++        } else {
++            rewrittenBuf.writeCharSequence(rewrittenBrand, StandardCharsets.UTF_8);
++        }
 +
-+  public CompletableFuture<CookieReceiveEvent> consumeCookieReceiveEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, @MonotonicNonNull ConnectedPlayer connectedPlayer, Key key, byte[] payload) {
-+    return vg.server.getEventManager().fire(new CookieReceiveEvent(connectedPlayer, key, payload));
-+  }
++        return new PluginMessagePacket(protocolVersion.noLessThan(ProtocolVersion.MINECRAFT_1_13) ? "minecraft:brand" : "MC|Brand", rewrittenBuf);
++    }
 +
-+  public CompletableFuture<GameProfileRequestEvent> consumeProfileRequestEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, GameProfileRequestEvent profileRequestEvent) {
-+    return vg.server.getEventManager().fire(profileRequestEvent);
-+  }
++    public CompletableFuture<PreLoginEvent> consumePreLoginEvent(InitialLoginSessionHandler connection, LoginInboundConnection inbound, String username, @Nullable UUID holderUuid) {
++        return vg.server.getEventManager().fire(new PreLoginEvent(inbound, username, holderUuid));
++    }
 +
-+  public CompletableFuture<PermissionsSetupEvent> consumePermissionsSetupEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player, PermissionProvider provider) {
-+    return vg.server.getEventManager().fire(new PermissionsSetupEvent(player, provider));
-+  }
++    public CompletableFuture<LoginEvent> consumeLoginEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player) {
++        if (mcConnection.vgConnection.earlyTrust) {
++            return vg.server.getEventManager().fire(new LoginEvent(player));
++        } else {
++            return CompletableFuture.completedFuture(new LoginEvent(player));
++        }
++    }
 +
-+  public CompletableFuture<DisconnectEvent> consumeDisconnectEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player, DisconnectEvent.LoginStatus loginStatus) {
-+    return vg.server.getEventManager().fire(new DisconnectEvent(player, loginStatus));
-+  }
++    public CompletableFuture<PostLoginEvent> consumePostLoginEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player) {
++        if (mcConnection.vgConnection.earlyTrust) {
++            return vg.server.getEventManager().fire(new PostLoginEvent(player));
++        } else {
++            return CompletableFuture.completedFuture(new PostLoginEvent(player));
++        }
++    }
++
++    public CompletableFuture<PlayerChooseInitialServerEvent> consumePlayerChooseInitialServerEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player, RegisteredServer registeredServer) {
++        PlayerChooseInitialServerEvent event = new PlayerChooseInitialServerEvent(player, registeredServer);
++
++        if (mcConnection.vgConnection.earlyTrust) {
++            return vg.server.getEventManager().fire(event);
++        } else {
++            event.setInitialServer(vg.server.createRawRegisteredServer(new ServerInfo(
++                    "velocity-guard-limbo",
++                    vg.limboServer.getBindAddress()
++            )));
++            return CompletableFuture.completedFuture(event);
++        }
++    }
++
++    public CompletableFuture<CookieReceiveEvent> consumeCookieReceiveEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, @MonotonicNonNull ConnectedPlayer connectedPlayer, Key key, byte[] payload) {
++        return vg.server.getEventManager().fire(new CookieReceiveEvent(connectedPlayer, key, payload));
++    }
++
++    public CompletableFuture<GameProfileRequestEvent> consumeProfileRequestEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, GameProfileRequestEvent profileRequestEvent) {
++        return vg.server.getEventManager().fire(profileRequestEvent);
++    }
++
++    public CompletableFuture<PermissionsSetupEvent> consumePermissionsSetupEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player, PermissionProvider provider) {
++        return vg.server.getEventManager().fire(new PermissionsSetupEvent(player, provider));
++    }
++
++    public CompletableFuture<DisconnectEvent> consumeDisconnectEvent(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player, DisconnectEvent.LoginStatus loginStatus) {
++        return vg.server.getEventManager().fire(new DisconnectEvent(player, loginStatus));
++    }
++
++    public void connectToInitialServer(MinecraftConnection mcConnection, AuthSessionHandler authSessionHandler, ConnectedPlayer player, RegisteredServer initialServer) {
++        VgConnection vgConnection = mcConnection.vgConnection;
++        if (vgConnection.earlyTrust) {
++            player.createConnectionRequest(initialServer).fireAndForget();
++            return;
++        }
++
++        player.createConnectionRequest(initialServer).connect().thenAccept(event -> {
++            if (event.isSuccessful()) {
++                vg.captcha.addConnection(vgConnection);
++            } else {
++                player.disconnect(Component.text("Internal error"));
++            }
++        });
++    }
++
++    public MinecraftPacket processPlayerInfoPacket(MinecraftConnection mcConnection, UpsertPlayerInfoPacket rawPacket) {
++        ConnectedPlayer connectedPlayer = mcConnection.vgConnection.connectedPlayer;
++        if (connectedPlayer == null) {
++            return rawPacket;
++        }
++        List<UpsertPlayerInfoPacket.Entry> entries = new ArrayList<>(rawPacket.getEntries().size());
++        for (UpsertPlayerInfoPacket.Entry entry : rawPacket.getEntries()) {
++            if (connectedPlayer.getUniqueId().equals(entry.getProfileId())) {
++                UpsertPlayerInfoPacket.Entry newEntry = new UpsertPlayerInfoPacket.Entry(mcConnection.vgConnection.sessionId);
++                newEntry.setProfile(entry.getProfile() == null ? null : entry.getProfile().withId(mcConnection.vgConnection.sessionId));
++                newEntry.setListed(entry.isListed());
++                newEntry.setLatency(entry.getLatency());
++                newEntry.setGameMode(entry.getGameMode());
++                newEntry.setDisplayName(entry.getDisplayName());
++                newEntry.setListOrder(entry.getListOrder());
++                newEntry.setChatSession(entry.getChatSession());
++                entries.add(newEntry);
++            } else {
++                entries.add(entry);
++            }
++        }
++        return new UpsertPlayerInfoPacket(rawPacket.getActions(), entries);
++    }
++
++    public MinecraftPacket processPlayerInfoPacket(MinecraftConnection mcConnection, RemovePlayerInfoPacket packet) {
++        ConnectedPlayer connectedPlayer = mcConnection.vgConnection.connectedPlayer;
++        if (connectedPlayer == null) {
++            return packet;
++        }
++        List<UUID> profilesToRemove = new ArrayList<>(packet.getProfilesToRemove().size());
++        for (UUID uuid : packet.getProfilesToRemove()) {
++            if (connectedPlayer.getUniqueId().equals(uuid)) {
++                profilesToRemove.add(mcConnection.vgConnection.sessionId);
++            } else {
++                profilesToRemove.add(uuid);
++            }
++        }
++        return new RemovePlayerInfoPacket(profilesToRemove);
++    }
 +}

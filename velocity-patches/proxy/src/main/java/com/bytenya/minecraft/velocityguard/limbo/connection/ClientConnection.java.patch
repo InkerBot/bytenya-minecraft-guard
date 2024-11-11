@@ -1,9 +1,9 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/ClientConnection.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/ClientConnection.java
 new file mode 100644
-index 00000000..80272a97
+index 00000000..94f2def4
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/ClientConnection.java
-@@ -0,0 +1,345 @@
+@@ -0,0 +1,342 @@
 +/*
 + * Copyright (C) 2020 Nan1t
 + *
@@ -22,26 +22,6 @@ index 00000000..80272a97
 + */
 +package com.bytenya.minecraft.velocityguard.limbo.connection;
 +
-+import java.net.InetSocketAddress;
-+import java.net.SocketAddress;
-+import java.security.InvalidKeyException;
-+import java.security.MessageDigest;
-+import java.util.UUID;
-+import java.util.concurrent.ThreadLocalRandom;
-+import java.util.concurrent.TimeUnit;
-+
-+import javax.crypto.Mac;
-+import javax.crypto.spec.SecretKeySpec;
-+
-+import com.google.gson.*;
-+import org.apache.logging.log4j.LogManager;
-+import org.apache.logging.log4j.Logger;
-+import org.jetbrains.annotations.NotNull;
-+
-+import io.netty.channel.Channel;
-+import io.netty.channel.ChannelFutureListener;
-+import io.netty.channel.ChannelHandlerContext;
-+import io.netty.channel.ChannelInboundHandlerAdapter;
 +import com.bytenya.minecraft.velocityguard.limbo.connection.pipeline.PacketDecoder;
 +import com.bytenya.minecraft.velocityguard.limbo.connection.pipeline.PacketEncoder;
 +import com.bytenya.minecraft.velocityguard.limbo.protocol.ByteMessage;
@@ -53,6 +33,24 @@ index 00000000..80272a97
 +import com.bytenya.minecraft.velocityguard.limbo.protocol.registry.Version;
 +import com.bytenya.minecraft.velocityguard.limbo.server.LimboServer;
 +import com.bytenya.minecraft.velocityguard.limbo.util.UuidUtil;
++import com.google.gson.*;
++import io.netty.channel.Channel;
++import io.netty.channel.ChannelFutureListener;
++import io.netty.channel.ChannelHandlerContext;
++import io.netty.channel.ChannelInboundHandlerAdapter;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
++import org.jetbrains.annotations.NotNull;
++
++import javax.crypto.Mac;
++import javax.crypto.spec.SecretKeySpec;
++import java.net.InetSocketAddress;
++import java.net.SocketAddress;
++import java.security.InvalidKeyException;
++import java.security.MessageDigest;
++import java.util.UUID;
++import java.util.concurrent.ThreadLocalRandom;
++import java.util.concurrent.TimeUnit;
 +
 +public class ClientConnection extends ChannelInboundHandlerAdapter {
 +    private static final Logger logger = LogManager.getLogger(ClientConnection.class);
@@ -300,8 +298,7 @@ index 00000000..80272a97
 +        String token = null;
 +
 +        for (JsonElement obj : arr) {
-+            if (obj instanceof JsonObject) {
-+                JsonObject prop = (JsonObject) obj;
++            if (obj instanceof JsonObject prop) {
 +                if (prop.get("name").getAsString().equals("bungeeguard-token")) {
 +                    token = prop.get("value").getAsString();
 +                    break;

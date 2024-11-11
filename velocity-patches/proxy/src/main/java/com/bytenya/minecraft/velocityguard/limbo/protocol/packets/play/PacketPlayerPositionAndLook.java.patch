@@ -1,9 +1,9 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketPlayerPositionAndLook.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketPlayerPositionAndLook.java
 new file mode 100644
-index 00000000..551027c6
+index 00000000..2578585e
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketPlayerPositionAndLook.java
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,68 @@
 +/*
 + * Copyright (C) 2020 Nan1t
 + *
@@ -36,7 +36,8 @@ index 00000000..551027c6
 +    private float pitch;
 +    private int teleportId;
 +
-+    public PacketPlayerPositionAndLook() {}
++    public PacketPlayerPositionAndLook() {
++    }
 +
 +    public PacketPlayerPositionAndLook(double x, double y, double z, float yaw, float pitch, int teleportId) {
 +        this.x = x;

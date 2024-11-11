@@ -1,75 +1,79 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VelocityGuard.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VelocityGuard.java
 new file mode 100644
-index 00000000..3df57afb
+index 00000000..d739ec72
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VelocityGuard.java
-@@ -0,0 +1,69 @@
+@@ -0,0 +1,73 @@
 +package com.bytenya.minecraft.velocityguard;
 +
 +import com.bytenya.minecraft.velocityguard.api.VgServer;
-+import com.velocitypowered.proxy.VelocityServer;
-+import com.velocitypowered.proxy.connection.MinecraftConnection;
-+import io.netty.channel.Channel;
-+import org.apache.logging.log4j.LogManager;
-+import org.apache.logging.log4j.Logger;
 +import com.bytenya.minecraft.velocityguard.limbo.configuration.LimboConfig;
 +import com.bytenya.minecraft.velocityguard.limbo.configuration.YamlLimboConfig;
 +import com.bytenya.minecraft.velocityguard.limbo.server.Command;
 +import com.bytenya.minecraft.velocityguard.limbo.server.CommandHandler;
 +import com.bytenya.minecraft.velocityguard.limbo.server.ConsoleCommandHandler;
 +import com.bytenya.minecraft.velocityguard.limbo.server.LimboServer;
++import com.velocitypowered.proxy.VelocityServer;
++import com.velocitypowered.proxy.connection.MinecraftConnection;
++import io.netty.channel.Channel;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
 +
 +import java.nio.file.Path;
 +import java.nio.file.Paths;
 +
 +public class VelocityGuard implements VgServer {
-+  private static final Logger logger = LogManager.getLogger(VelocityGuard.class);
++    private static final Logger logger = LogManager.getLogger(VelocityGuard.class);
 +
-+  public final VelocityServer server;
-+  public final VgConfig config;
-+  public final VgEventFactory eventFactory;
-+  public final LimboServer limboServer;
++    public final VelocityServer server;
++    public final VgConfig config;
++    public final VgSecurity security;
++    public final VgCaptcha captcha;
++    public final VgEventFactory eventFactory;
++    public final LimboServer limboServer;
 +
-+  public VelocityGuard(VelocityServer server) {
-+    this.server = server;
-+    this.config = loadConfig();
-+    this.eventFactory = new VgEventFactory(this);
-+    this.limboServer = createLimboServer();
-+  }
-+
-+  private LimboServer createLimboServer() {
-+    try {
-+      LimboConfig config = new YamlLimboConfig(Paths.get("limbo"), VelocityGuard.class.getClassLoader()).load();
-+      CommandHandler<Command> commandHandler = new ConsoleCommandHandler();
-+      return new LimboServer(config, commandHandler, VelocityGuard.class.getClassLoader());
-+    } catch (Exception e) {
-+      logger.error("Unable to create LimboServer", e);
-+      System.exit(1);
-+      throw new Error();
++    public VelocityGuard(VelocityServer server) {
++        this.server = server;
++        this.config = loadConfig();
++        this.security = new VgSecurity(this);
++        this.captcha = new VgCaptcha(this);
++        this.eventFactory = new VgEventFactory(this);
++        this.limboServer = createLimboServer();
 +    }
-+  }
 +
-+  private VgConfig loadConfig() {
-+    try {
-+      Path velocityGuardConfigPath = Path.of("velocityguard.toml");
-+      VgConfig config = VgConfig.read(velocityGuardConfigPath);
-+
-+      if (!config.validate()) {
-+        logger.error("Your VelocityGuard configuration is invalid. Velocity will not start up until the errors are resolved.");
-+        LogManager.shutdown();
-+        System.exit(1);
-+        throw new Error();
-+      }
-+      return config;
-+    } catch (Exception e) {
-+      logger.error("Unable to read/load/save your velocityguard.toml. The server will shut down.", e);
-+      LogManager.shutdown();
-+      System.exit(1);
-+      throw new Error();
++    private LimboServer createLimboServer() {
++        try {
++            LimboConfig config = new YamlLimboConfig(Paths.get("limbo"), VelocityGuard.class.getClassLoader()).load();
++            CommandHandler<Command> commandHandler = new ConsoleCommandHandler();
++            return new LimboServer(config, commandHandler, VelocityGuard.class.getClassLoader());
++        } catch (Exception e) {
++            logger.error("Unable to create LimboServer", e);
++            System.exit(1);
++            throw new Error();
++        }
 +    }
-+  }
 +
-+  public VgConnection createConnection(Channel channel, MinecraftConnection minecraftConnection) {
-+    return new VgConnection(this, channel, minecraftConnection);
-+  }
++    private VgConfig loadConfig() {
++        try {
++            Path velocityGuardConfigPath = Path.of("velocityguard.json");
++            VgConfig config = VgConfig.read(velocityGuardConfigPath);
++
++            if (!config.validate()) {
++                logger.error("Your VelocityGuard configuration is invalid. Velocity will not start up until the errors are resolved.");
++                LogManager.shutdown();
++                System.exit(1);
++                throw new Error();
++            }
++            return config;
++        } catch (Exception e) {
++            logger.error("Unable to read/load/save your velocityguard.json. The server will shut down.", e);
++            LogManager.shutdown();
++            System.exit(1);
++            throw new Error();
++        }
++    }
++
++    public VgConnection createConnection(Channel channel, MinecraftConnection minecraftConnection) {
++        return new VgConnection(this, channel, minecraftConnection);
++    }
 +}

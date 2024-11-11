@@ -1,9 +1,9 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/PacketSnapshots.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/PacketSnapshots.java
 new file mode 100644
-index 00000000..977b8e75
+index 00000000..d793b355
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/PacketSnapshots.java
-@@ -0,0 +1,361 @@
+@@ -0,0 +1,346 @@
 +/*
 + * Copyright (C) 2020 Nan1t
 + *
@@ -23,33 +23,20 @@ index 00000000..977b8e75
 +
 +package com.bytenya.minecraft.velocityguard.limbo.connection;
 +
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play.PacketGameEvent;
-+import net.kyori.adventure.nbt.BinaryTag;
-+import net.kyori.adventure.nbt.CompoundBinaryTag;
-+import net.kyori.adventure.nbt.ListBinaryTag;
 +import com.bytenya.minecraft.velocityguard.limbo.LimboConstants;
 +import com.bytenya.minecraft.velocityguard.limbo.protocol.PacketSnapshot;
 +import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.configuration.PacketFinishConfiguration;
 +import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.configuration.PacketRegistryData;
 +import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.login.PacketLoginSuccess;
++import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play.*;
 +import com.bytenya.minecraft.velocityguard.limbo.server.LimboServer;
 +import com.bytenya.minecraft.velocityguard.limbo.server.data.Title;
 +import com.bytenya.minecraft.velocityguard.limbo.util.NbtMessageUtil;
 +import com.bytenya.minecraft.velocityguard.limbo.util.UuidUtil;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play.PacketBossBar;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play.PacketChatMessage;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play.PacketDeclareCommands;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play.PacketJoinGame;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play.PacketPlayerAbilities;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play.PacketPlayerInfo;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play.PacketPlayerListHeader;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play.PacketPlayerPositionAndLook;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play.PacketPluginMessage;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play.PacketTitleLegacy;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play.PacketTitleSetSubTitle;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play.PacketTitleSetTitle;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play.PacketTitleTimes;
 +import com.bytenya.minecraft.velocityguard.limbo.world.Dimension;
++import net.kyori.adventure.nbt.BinaryTag;
++import net.kyori.adventure.nbt.CompoundBinaryTag;
++import net.kyori.adventure.nbt.ListBinaryTag;
 +
 +import java.util.ArrayList;
 +import java.util.Collections;
@@ -59,20 +46,20 @@ index 00000000..977b8e75
 +
 +public final class PacketSnapshots {
 +
-+    private PacketSnapshot packetLoginSuccess;
-+    private PacketSnapshot packetJoinGame;
-+    private PacketSnapshot packetSpawnPosition;
++    private final PacketSnapshot packetLoginSuccess;
++    private final PacketSnapshot packetJoinGame;
++    private final PacketSnapshot packetSpawnPosition;
 +    private PacketSnapshot packetPluginMessage;
-+    private PacketSnapshot packetPlayerAbilities;
-+    private PacketSnapshot packetPlayerInfo;
-+    private PacketSnapshot packetDeclareCommands;
++    private final PacketSnapshot packetPlayerAbilities;
++    private final PacketSnapshot packetPlayerInfo;
++    private final PacketSnapshot packetDeclareCommands;
 +    private PacketSnapshot packetJoinMessage;
 +    private PacketSnapshot packetBossBar;
 +    private PacketSnapshot packetHeaderAndFooter;
 +
-+    private PacketSnapshot packetPlayerPosAndLookLegacy;
++    private final PacketSnapshot packetPlayerPosAndLookLegacy;
 +    // For 1.19 we need to spawn player outside the world to avoid stuck in terrain loading
-+    private PacketSnapshot packetPlayerPosAndLook;
++    private final PacketSnapshot packetPlayerPosAndLook;
 +
 +    private PacketSnapshot packetTitleTitle;
 +    private PacketSnapshot packetTitleSubtitle;
@@ -82,12 +69,12 @@ index 00000000..977b8e75
 +    private PacketSnapshot packetTitleLegacySubtitle;
 +    private PacketSnapshot packetTitleLegacyTimes;
 +
-+    private PacketSnapshot packetRegistryData;
-+    private List<PacketSnapshot> packetsRegistryData;
-+    private PacketSnapshot packetFinishConfiguration;
++    private final PacketSnapshot packetRegistryData;
++    private final List<PacketSnapshot> packetsRegistryData;
++    private final PacketSnapshot packetFinishConfiguration;
 +
-+    private List<PacketSnapshot> packetsEmptyChunks;
-+    private PacketSnapshot packetStartWaitingChunks;
++    private final List<PacketSnapshot> packetsEmptyChunks;
++    private final PacketSnapshot packetStartWaitingChunks;
 +
 +    public PacketSnapshots(LimboServer server) {
 +        final String username = server.getConfig().getPingData().getVersion();
@@ -154,12 +141,10 @@ index 00000000..977b8e75
 +            packetHeaderAndFooter = PacketSnapshot.of(header);
 +        }
 +
-+        if (server.getConfig().isUseBrandName()) {
-+            PacketPluginMessage pluginMessage = new PacketPluginMessage();
-+            pluginMessage.setChannel(LimboConstants.BRAND_CHANNEL);
-+            pluginMessage.setMessage(server.getConfig().getBrandName());
-+            packetPluginMessage = PacketSnapshot.of(pluginMessage);
-+        }
++        PacketPluginMessage pluginMessage = new PacketPluginMessage();
++        pluginMessage.setChannel(LimboConstants.BRAND_CHANNEL);
++        pluginMessage.setMessage("ByteNya Guard Limbo");
++        packetPluginMessage = PacketSnapshot.of(pluginMessage);
 +
 +        if (server.getConfig().isUseJoinMessage()) {
 +            PacketChatMessage joinMessage = new PacketChatMessage();
@@ -254,8 +239,8 @@ index 00000000..977b8e75
 +        packetGameEvent.setValue(0);
 +        packetStartWaitingChunks = PacketSnapshot.of(packetGameEvent);
 +
-+        int chunkXOffset = (int) 0 >> 4; // Default x position is 0
-+        int chunkZOffset = (int) 0 >> 4; // Default z position is 0
++        int chunkXOffset = 0 >> 4; // Default x position is 0
++        int chunkZOffset = 0 >> 4; // Default z position is 0
 +        int chunkEdgeSize = 1; // TODO Make configurable?
 +
 +        List<PacketSnapshot> emptyChunks = new ArrayList<>();

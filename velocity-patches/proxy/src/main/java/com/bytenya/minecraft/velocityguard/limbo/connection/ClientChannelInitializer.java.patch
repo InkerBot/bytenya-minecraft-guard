@@ -1,6 +1,6 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/ClientChannelInitializer.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/ClientChannelInitializer.java
 new file mode 100644
-index 00000000..9d422254
+index 00000000..a8e8f3d7
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/ClientChannelInitializer.java
 @@ -0,0 +1,63 @@
@@ -24,11 +24,11 @@ index 00000000..9d422254
 +package com.bytenya.minecraft.velocityguard.limbo.connection;
 +
 +import com.bytenya.minecraft.velocityguard.limbo.connection.pipeline.VarIntFrameDecoder;
++import com.bytenya.minecraft.velocityguard.limbo.server.LimboServer;
 +import io.netty.channel.Channel;
 +import io.netty.channel.ChannelInitializer;
 +import io.netty.channel.ChannelPipeline;
 +import io.netty.handler.timeout.ReadTimeoutHandler;
-+import com.bytenya.minecraft.velocityguard.limbo.server.LimboServer;
 +
 +import java.util.concurrent.TimeUnit;
 +

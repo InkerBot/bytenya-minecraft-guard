@@ -1,17 +1,17 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/configuration/LimboConfig.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/configuration/LimboConfig.java
 new file mode 100644
-index 00000000..779d85f2
+index 00000000..d6d698e7
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/configuration/LimboConfig.java
-@@ -0,0 +1,79 @@
+@@ -0,0 +1,75 @@
 +package com.bytenya.minecraft.velocityguard.limbo.configuration;
-+
-+import java.net.SocketAddress;
 +
 +import com.bytenya.minecraft.velocityguard.limbo.server.data.BossBar;
 +import com.bytenya.minecraft.velocityguard.limbo.server.data.InfoForwarding;
 +import com.bytenya.minecraft.velocityguard.limbo.server.data.PingData;
 +import com.bytenya.minecraft.velocityguard.limbo.server.data.Title;
++
++import java.net.SocketAddress;
 +
 +public interface LimboConfig {
 +    SocketAddress getAddress();
@@ -30,8 +30,6 @@ index 00000000..779d85f2
 +
 +    int getDebugLevel();
 +
-+    boolean isUseBrandName();
-+
 +    boolean isUseJoinMessage();
 +
 +    boolean isUseBossBar();
@@ -41,8 +39,6 @@ index 00000000..779d85f2
 +    boolean isUsePlayerList();
 +
 +    boolean isUseHeaderAndFooter();
-+
-+    String getBrandName();
 +
 +    String getJoinMessage();
 +

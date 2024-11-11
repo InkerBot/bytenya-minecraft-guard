@@ -1,0 +1,37 @@
+diff --git a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/InitialInboundConnection.java b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/InitialInboundConnection.java
+index 7b918374..f5a9e258 100644
+--- a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/InitialInboundConnection.java
++++ b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/InitialInboundConnection.java
+@@ -85,7 +85,9 @@ public final class InitialInboundConnection implements VelocityInboundConnection
+     final String playerIp =
+         isPlayerAddressLoggingEnabled
+             ? connection.getRemoteAddress().toString() : "<ip address withheld>";
+-    return "[initial connection] " + playerIp;
++    // ByteNya start
++    return "[initial connection] (" + playerIp + ", " + connection.vgConnection.sessionId + ")";
++    // ByteNya end
+   }
+ 
+   @Override
+@@ -109,7 +111,9 @@ public final class InitialInboundConnection implements VelocityInboundConnection
+     if (connection.server.getConfiguration().isLogPlayerConnections()) {
+       logger.info(Component.text(this + " has disconnected: ").append(translated));
+     }
+-    connection.closeWith(DisconnectPacket.create(translated, getProtocolVersion(), connection.getState()));
++    // ByteNya start
++    connection.closeWith(DisconnectPacket.create(connection.server.vg.eventFactory.processDisconnectMessage(connection, translated), getProtocolVersion(), connection.getState()));
++    // ByteNya end
+   }
+ 
+   /**
+@@ -120,6 +124,8 @@ public final class InitialInboundConnection implements VelocityInboundConnection
+   public void disconnectQuietly(Component reason) {
+     Component translated = GlobalTranslator.render(reason, ClosestLocaleMatcher.INSTANCE
+         .lookupClosest(Locale.getDefault()));
+-    connection.closeWith(DisconnectPacket.create(translated, getProtocolVersion(), connection.getState()));
++    // ByteNya start
++    connection.closeWith(DisconnectPacket.create(connection.server.vg.eventFactory.processDisconnectMessage(connection, translated), getProtocolVersion(), connection.getState()));
++    // ByteNya end
+   }
+ }
+\ No newline at end of file

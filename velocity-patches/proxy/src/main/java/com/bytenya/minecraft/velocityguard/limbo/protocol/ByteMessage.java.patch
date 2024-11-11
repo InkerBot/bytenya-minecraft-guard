@@ -1,9 +1,9 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/ByteMessage.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/ByteMessage.java
 new file mode 100644
-index 00000000..8a1054c3
+index 00000000..c94f70a4
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/ByteMessage.java
-@@ -0,0 +1,1268 @@
+@@ -0,0 +1,1245 @@
 +/*
 + * Copyright (C) 2020 Nan1t
 + *
@@ -23,12 +23,13 @@ index 00000000..8a1054c3
 +
 +package com.bytenya.minecraft.velocityguard.limbo.protocol;
 +
++import com.bytenya.minecraft.velocityguard.limbo.protocol.registry.Version;
 +import io.netty.buffer.*;
 +import io.netty.handler.codec.DecoderException;
 +import io.netty.handler.codec.EncoderException;
 +import io.netty.util.ByteProcessor;
 +import net.kyori.adventure.nbt.*;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.registry.Version;
++import org.jetbrains.annotations.NotNull;
 +
 +import java.io.IOException;
 +import java.io.InputStream;
@@ -45,8 +46,6 @@ index 00000000..8a1054c3
 +import java.util.EnumSet;
 +import java.util.UUID;
 +
-+import org.jetbrains.annotations.NotNull;
-+
 +public class ByteMessage extends ByteBuf {
 +
 +    private final ByteBuf buf;
@@ -55,13 +54,24 @@ index 00000000..8a1054c3
 +        this.buf = buf;
 +    }
 +
++    private static void writeFixedBitSet(BitSet bits, int size, ByteBuf buf) {
++        if (bits.length() > size) {
++            throw new StackOverflowError("BitSet too large (expected " + size + " got " + bits.size() + ")");
++        }
++        buf.writeBytes(Arrays.copyOf(bits.toByteArray(), (size + 8) >> 3));
++    }
++
++    /* Minecraft's protocol methods */
++
++    public static ByteMessage create() {
++        return new ByteMessage(Unpooled.buffer());
++    }
++
 +    public byte[] toByteArray() {
 +        byte[] bytes = new byte[buf.readableBytes()];
 +        buf.readBytes(bytes);
 +        return bytes;
 +    }
-+
-+    /* Minecraft's protocol methods */
 +
 +    public int readVarInt() {
 +        int i = 0;
@@ -200,8 +210,7 @@ index 00000000..8a1054c3
 +            for (CompoundBinaryTag tag : compoundTags) {
 +                BinaryTagIO.writer().write(tag, (OutputStream) stream);
 +            }
-+        }
-+        catch (IOException e) {
++        } catch (IOException e) {
 +            throw new EncoderException("Cannot write NBT CompoundTag");
 +        }
 +    }
@@ -209,8 +218,7 @@ index 00000000..8a1054c3
 +    public CompoundBinaryTag readCompoundTag() {
 +        try (ByteBufInputStream stream = new ByteBufInputStream(buf)) {
 +            return BinaryTagIO.reader().read((InputStream) stream);
-+        }
-+        catch (IOException thrown) {
++        } catch (IOException thrown) {
 +            throw new DecoderException("Cannot read NBT CompoundTag");
 +        }
 +    }
@@ -218,8 +226,7 @@ index 00000000..8a1054c3
 +    public void writeCompoundTag(CompoundBinaryTag compoundTag) {
 +        try (ByteBufOutputStream stream = new ByteBufOutputStream(buf)) {
 +            BinaryTagIO.writer().write(compoundTag, (OutputStream) stream);
-+        }
-+        catch (IOException e) {
++        } catch (IOException e) {
 +            throw new EncoderException("Cannot write NBT CompoundTag");
 +        }
 +    }
@@ -229,45 +236,27 @@ index 00000000..8a1054c3
 +            stream.writeByte(binaryTag.type().id());
 +
 +            // TODO Find a way to improve this...
-+            if (binaryTag instanceof CompoundBinaryTag) {
-+                CompoundBinaryTag tag = (CompoundBinaryTag) binaryTag;
++            if (binaryTag instanceof CompoundBinaryTag tag) {
 +                tag.type().write(tag, stream);
-+            }
-+            else if (binaryTag instanceof ByteBinaryTag) {
-+                ByteBinaryTag tag = (ByteBinaryTag) binaryTag;
++            } else if (binaryTag instanceof ByteBinaryTag tag) {
 +                tag.type().write(tag, stream);
-+            }
-+            else if (binaryTag instanceof ShortBinaryTag) {
-+                ShortBinaryTag tag = (ShortBinaryTag) binaryTag;
++            } else if (binaryTag instanceof ShortBinaryTag tag) {
 +                tag.type().write(tag, stream);
-+            }
-+            else  if (binaryTag instanceof IntBinaryTag) {
-+                IntBinaryTag tag = (IntBinaryTag) binaryTag;
++            } else if (binaryTag instanceof IntBinaryTag tag) {
 +                tag.type().write(tag, stream);
-+            }
-+            else if (binaryTag instanceof LongBinaryTag) {
-+                LongBinaryTag tag = (LongBinaryTag) binaryTag;
++            } else if (binaryTag instanceof LongBinaryTag tag) {
 +                tag.type().write(tag, stream);
-+            }
-+            else if (binaryTag instanceof DoubleBinaryTag) {
-+                DoubleBinaryTag tag = (DoubleBinaryTag) binaryTag;
++            } else if (binaryTag instanceof DoubleBinaryTag tag) {
 +                tag.type().write(tag, stream);
-+            }
-+            else if (binaryTag instanceof StringBinaryTag) {
-+                StringBinaryTag tag = (StringBinaryTag) binaryTag;
++            } else if (binaryTag instanceof StringBinaryTag tag) {
 +                tag.type().write(tag, stream);
-+            }
-+            else if (binaryTag instanceof ListBinaryTag) {
-+                ListBinaryTag tag = (ListBinaryTag) binaryTag;
++            } else if (binaryTag instanceof ListBinaryTag tag) {
 +                tag.type().write(tag, stream);
-+            }
-+            else if (binaryTag instanceof EndBinaryTag) {
-+                EndBinaryTag tag = (EndBinaryTag) binaryTag;
++            } else if (binaryTag instanceof EndBinaryTag tag) {
 +                tag.type().write(tag, stream);
 +            }
 +
-+        }
-+        catch (IOException e) {
++        } catch (IOException e) {
 +            throw new EncoderException("Cannot write NBT CompoundTag");
 +        }
 +    }
@@ -275,11 +264,12 @@ index 00000000..8a1054c3
 +    public void writeNbtMessage(NbtMessage nbtMessage, Version version) {
 +        if (version.moreOrEqual(Version.V1_20_3)) {
 +            writeNamelessCompoundTag(nbtMessage.getTag());
-+        }
-+        else {
++        } else {
 +            writeString(nbtMessage.getJson());
 +        }
 +    }
++
++    /* Delegated methods */
 +
 +    public <E extends Enum<E>> void writeEnumSet(EnumSet<E> enumset, Class<E> oclass) {
 +        E[] enums = oclass.getEnumConstants();
@@ -291,15 +281,6 @@ index 00000000..8a1054c3
 +
 +        writeFixedBitSet(bits, enums.length, buf);
 +    }
-+
-+    private static void writeFixedBitSet(BitSet bits, int size, ByteBuf buf) {
-+        if (bits.length() > size) {
-+            throw new StackOverflowError("BitSet too large (expected " + size + " got " + bits.size() + ")");
-+        }
-+        buf.writeBytes(Arrays.copyOf(bits.toByteArray(), (size + 8) >> 3));
-+    }
-+
-+    /* Delegated methods */
 +
 +    @Override
 +    public int capacity() {
@@ -1266,9 +1247,5 @@ index 00000000..8a1054c3
 +    @Override
 +    public boolean release(int decrement) {
 +        return buf.release(decrement);
-+    }
-+
-+    public static ByteMessage create() {
-+        return new ByteMessage(Unpooled.buffer());
 +    }
 +}

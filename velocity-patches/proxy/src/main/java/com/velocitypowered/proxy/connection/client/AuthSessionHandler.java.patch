@@ -1,5 +1,5 @@
 diff --git a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java
-index 6165a846..5d25429c 100644
+index 6165a846..b981a13c 100644
 --- a/proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java
 +++ b/proxy/src/main/java/com/velocitypowered/proxy/connection/client/AuthSessionHandler.java
 @@ -70,6 +70,9 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
@@ -103,3 +103,14 @@ index 6165a846..5d25429c 100644
        Optional<RegisteredServer> toTry = event.getInitialServer();
        if (toTry.isEmpty()) {
          player.disconnect0(
+@@ -265,7 +281,9 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
+             true);
+         return;
+       }
+-      player.createConnectionRequest(toTry.get()).fireAndForget();
++      // ByteNya start
++      server.vg.eventFactory.connectToInitialServer(mcConnection, this, player, toTry.get());
++      // ByteNya end
+     }, mcConnection.eventLoop());
+   }
+ 

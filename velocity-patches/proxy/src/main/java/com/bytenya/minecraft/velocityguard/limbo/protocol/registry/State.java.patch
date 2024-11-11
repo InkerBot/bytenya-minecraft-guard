@@ -1,9 +1,9 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/registry/State.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/registry/State.java
 new file mode 100644
-index 00000000..b151b6c6
+index 00000000..882c845a
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/registry/State.java
-@@ -0,0 +1,467 @@
+@@ -0,0 +1,468 @@
 +/*
 + * Copyright (C) 2020 Nan1t
 + *
@@ -366,9 +366,9 @@ index 00000000..b151b6c6
 +        }
 +    }
 +
-+    private final int stateId;
 +    public final ProtocolMappings serverBound = new ProtocolMappings();
 +    public final ProtocolMappings clientBound = new ProtocolMappings();
++    private final int stateId;
 +
 +    State(int stateId) {
 +        this.stateId = stateId;
@@ -376,6 +376,18 @@ index 00000000..b151b6c6
 +
 +    public static State getById(int stateId) {
 +        return STATE_BY_ID.get(stateId);
++    }
++
++    /**
++     * Map packet id to version range
++     *
++     * @param packetId Packet id
++     * @param from     Minimal version (include)
++     * @param to       Last version (include)
++     * @return Created mapping
++     */
++    private static Mapping map(int packetId, Version from, Version to) {
++        return new Mapping(packetId, from, to);
 +    }
 +
 +    public static class ProtocolMappings {
@@ -457,17 +469,6 @@ index 00000000..b151b6c6
 +            this.to = to;
 +            this.packetId = packetId;
 +        }
-+    }
-+
-+    /**
-+     * Map packet id to version range
-+     * @param packetId Packet id
-+     * @param from Minimal version (include)
-+     * @param to Last version (include)
-+     * @return Created mapping
-+     */
-+    private static Mapping map(int packetId, Version from, Version to) {
-+        return new Mapping(packetId, from, to);
 +    }
 +
 +}

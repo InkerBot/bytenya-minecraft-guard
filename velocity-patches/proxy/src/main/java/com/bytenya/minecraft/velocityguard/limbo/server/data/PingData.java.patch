@@ -1,6 +1,6 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/data/PingData.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/data/PingData.java
 new file mode 100644
-index 00000000..0e7750c2
+index 00000000..5aafe6d1
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/data/PingData.java
 @@ -0,0 +1,73 @@
@@ -23,10 +23,10 @@ index 00000000..0e7750c2
 +
 +package com.bytenya.minecraft.velocityguard.limbo.server.data;
 +
++import com.bytenya.minecraft.velocityguard.limbo.util.Colors;
 +import org.checkerframework.checker.nullness.qual.Nullable;
 +import org.spongepowered.configurate.ConfigurationNode;
 +import org.spongepowered.configurate.serialize.TypeSerializer;
-+import com.bytenya.minecraft.velocityguard.limbo.util.Colors;
 +
 +import java.lang.reflect.Type;
 +

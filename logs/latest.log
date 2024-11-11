@@ -1,0 +1,22 @@
+[03:54:36] [main/WARN] [com.bytenya.minecraft.velocityguard.VgMain]: Failed to load Velocity Guard native library. You won't get any support from us!
+[03:54:37] [main/INFO] [com.velocitypowered.proxy.VelocityServer]: Booting up Velocity <unknown>...
+[03:54:37] [main/INFO] [com.velocitypowered.proxy.VelocityServer]: Loading localizations...
+[03:54:37] [main/INFO] [com.velocitypowered.proxy.network.ConnectionManager]: Connections will use epoll channels, Java compression, Java ciphers
+[03:54:37] [main/WARN] [com.velocitypowered.proxy.config.VelocityConfiguration]: Player info forwarding is disabled! All players will appear to be connecting from the proxy and will have offline-mode UUIDs.
+[03:54:37] [main/INFO] [com.velocitypowered.proxy.VelocityServer]: Loading plugins...
+[03:54:37] [main/INFO] [com.velocitypowered.proxy.VelocityServer]: Loaded 1 plugins
+[03:54:37] [main/INFO] [com.bytenya.minecraft.velocityguard.limbo.server.LimboServer]: Starting LimboServer...
+[03:54:37] [main/ERROR] [com.velocitypowered.proxy.VelocityServer]: Unable to start LimboServer
+java.lang.NullPointerException: Cannot invoke "com.bytenya.minecraft.velocityguard.limbo.server.data.PingData.getVersion()" because the return value of "com.bytenya.minecraft.velocityguard.limbo.configuration.LimboConfig.getPingData()" is null
+	at com.bytenya.minecraft.velocityguard.limbo.connection.PacketSnapshots.<init>(PacketSnapshots.java:87) ~[main/:?]
+	at com.bytenya.minecraft.velocityguard.limbo.server.LimboServer.start(LimboServer.java:103) ~[main/:?]
+	at com.velocitypowered.proxy.VelocityServer.start(VelocityServer.java:304) ~[main/:?]
+	at com.velocitypowered.proxy.Velocity.main(Velocity.java:71) ~[main/:?]
+	at com.bytenya.minecraft.velocityguard.VgMain.main(VgMain.java:32) ~[main/:?]
+[03:54:38] [main/WARN] [com.velocitypowered.proxy.VelocityServer]: debug environment, metrics is disabled!
+[03:54:38] [main/INFO] [com.velocitypowered.proxy.Velocity]: Done (1.16s)!
+[03:54:38] [Netty epoll Boss #0/INFO] [com.velocitypowered.proxy.network.ConnectionManager]: Listening on /[0:0:0:0:0:0:0:0]:25565
+[04:20:55] [Shutdown thread/INFO] [com.velocitypowered.proxy.VelocityServer]: Shutting down the proxy...
+[04:20:55] [Shutdown thread/INFO] [com.velocitypowered.proxy.network.ConnectionManager]: Closing endpoint /0.0.0.0:25565
+[04:20:55] [Shutdown thread/INFO] [com.bytenya.minecraft.velocityguard.limbo.server.LimboServer]: Stopping server...
+[04:20:55] [Shutdown thread/INFO] [com.bytenya.minecraft.velocityguard.limbo.server.LimboServer]: Server stopped, Goodbye!

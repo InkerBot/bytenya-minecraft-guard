@@ -1,9 +1,9 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/pipeline/ChannelTrafficHandler.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/pipeline/ChannelTrafficHandler.java
 new file mode 100644
-index 00000000..e7a9e67b
+index 00000000..6f75cddb
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/pipeline/ChannelTrafficHandler.java
-@@ -0,0 +1,113 @@
+@@ -0,0 +1,112 @@
 +package com.bytenya.minecraft.velocityguard.limbo.connection.pipeline;
 +
 +import io.netty.buffer.ByteBuf;
@@ -30,8 +30,7 @@ index 00000000..e7a9e67b
 +
 +    @Override
 +    public void channelRead(@NotNull ChannelHandlerContext ctx, @NotNull Object msg) throws Exception {
-+        if (msg instanceof ByteBuf) {
-+            ByteBuf in = (ByteBuf) msg;
++        if (msg instanceof ByteBuf in) {
 +            int bytes = in.readableBytes();
 +
 +            if (maxPacketSize > 0 && bytes > maxPacketSize) {
@@ -87,7 +86,7 @@ index 00000000..e7a9e67b
 +                return;
 +            }
 +
-+            int bucketsToMove = (int)(timeDelta / this.intervalResolution);
++            int bucketsToMove = (int) (timeDelta / this.intervalResolution);
 +            double nextBucketTime = this.lastBucketTime + bucketsToMove * this.intervalResolution;
 +
 +            if (bucketsToMove >= this.data.length) {

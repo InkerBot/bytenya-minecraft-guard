@@ -1,6 +1,6 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/PacketSnapshot.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/PacketSnapshot.java
 new file mode 100644
-index 00000000..330d2fe7
+index 00000000..02c0f56b
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/PacketSnapshot.java
 @@ -0,0 +1,88 @@
@@ -40,6 +40,12 @@ index 00000000..330d2fe7
 +
 +    public PacketSnapshot(PacketOut packet) {
 +        this.packet = packet;
++    }
++
++    public static PacketSnapshot of(PacketOut packet) {
++        PacketSnapshot snapshot = new PacketSnapshot(packet);
++        snapshot.encode();
++        return snapshot;
 +    }
 +
 +    public PacketOut getWrappedPacket() {
@@ -84,11 +90,5 @@ index 00000000..330d2fe7
 +    @Override
 +    public String toString() {
 +        return packet.getClass().getSimpleName();
-+    }
-+
-+    public static PacketSnapshot of(PacketOut packet) {
-+        PacketSnapshot snapshot = new PacketSnapshot(packet);
-+        snapshot.encode();
-+        return snapshot;
 +    }
 +}

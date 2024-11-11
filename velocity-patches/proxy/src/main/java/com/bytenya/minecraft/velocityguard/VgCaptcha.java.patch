@@ -1,0 +1,160 @@
+diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgCaptcha.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgCaptcha.java
+new file mode 100644
+index 00000000..1943fd64
+--- /dev/null
++++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgCaptcha.java
+@@ -0,0 +1,154 @@
++package com.bytenya.minecraft.velocityguard;
++
++import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent;
++import com.velocitypowered.api.proxy.server.RegisteredServer;
++import com.velocitypowered.api.util.GameProfile;
++import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.format.NamedTextColor;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
++
++import java.net.URI;
++import java.net.http.HttpClient;
++import java.net.http.HttpRequest;
++import java.net.http.HttpResponse;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.Optional;
++import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.TimeUnit;
++
++import static com.google.common.net.UrlEscapers.urlFormParameterEscaper;
++import static com.velocitypowered.proxy.VelocityServer.GENERAL_GSON;
++
++public class VgCaptcha {
++    private static final Logger logger = LogManager.getLogger(VgCaptcha.class);
++
++    private static final String MOJANG_HASJOINED_URL =
++            System.getProperty("mojang.sessionserver",
++                            "https://sessionserver.mojang.com/session/minecraft/hasJoined")
++                    .concat("?username=%s&serverId=%s");
++
++    private final VelocityGuard vg;
++    private final List<VgConnection> connections = new ArrayList<>();
++
++    public VgCaptcha(VelocityGuard vg) {
++        this.vg = vg;
++    }
++
++    public void addConnection(VgConnection vgConnection) {
++        connections.add(vgConnection);
++
++        vgConnection.sendMessage(
++                Component.text("Hello, ByteNya Guard! Please wait for a moment, we are verifying your connection.")
++        );
++
++        vgConnection.eventLoop().schedule(() -> {
++            connections.remove(vgConnection);
++            vgConnection.sendMessage(
++                    Component.text("You have been verified! Connecting you to the server...")
++            );
++
++            ConnectedPlayer player = vgConnection.connectedPlayer;
++            CompletableFuture<Boolean> profileFuture;
++            if (vgConnection.serverId != null) {
++                profileFuture = requestOnline(player, vgConnection.requestUsername, vgConnection.serverId);
++            } else {
++                player.profile = GameProfile.forOfflinePlayer(vgConnection.requestUsername);
++                profileFuture = CompletableFuture.completedFuture(true);
++            }
++
++            profileFuture.thenAcceptAsync(verified -> {
++                if (verified) {
++                    Optional<RegisteredServer> initialFromConfig = player.getNextServerToTry();
++                    vg.server.getEventManager().fire(new PlayerChooseInitialServerEvent(player, initialFromConfig.orElse(null))).thenAcceptAsync(event -> {
++                        Optional<RegisteredServer> toTry = event.getInitialServer();
++                        if (toTry.isEmpty()) {
++                            player.disconnect0(
++                                    Component.translatable("velocity.error.no-available-servers", NamedTextColor.RED),
++                                    true);
++                            return;
++                        }
++                        player.createConnectionRequest(toTry.get()).connect().whenCompleteAsync((result, throwable) -> {
++                            if (throwable != null) {
++                                logger.error("Error connecting player to server", throwable);
++                                player.disconnect0(
++                                        Component.translatable("velocity.error.no-available-servers", NamedTextColor.RED),
++                                        true);
++                                return;
++                            }
++
++                            if (result.isSuccessful()) {
++                                return;
++                            }
++
++                            if (result.getReasonComponent().isPresent()) {
++                                player.disconnect0(result.getReasonComponent().get(), true);
++                            } else {
++                                player.disconnect0(
++                                        Component.translatable("velocity.error.no-available-servers", NamedTextColor.RED),
++                                        true);
++                            }
++
++                        }, vgConnection.eventLoop());
++                    }, vgConnection.eventLoop());
++                }
++            });
++        }, 5, TimeUnit.SECONDS);
++    }
++
++    public CompletableFuture<Boolean> requestOnline(ConnectedPlayer player, String username, String serverId) {
++        String playerIp = player.getRemoteAddress().getHostString();
++        String url = String.format(MOJANG_HASJOINED_URL,
++                urlFormParameterEscaper().escape(username), serverId);
++
++        if (vg.server.getConfiguration().shouldPreventClientProxyConnections()) {
++            url += "&ip=" + urlFormParameterEscaper().escape(playerIp);
++        }
++
++        final HttpRequest httpRequest = HttpRequest.newBuilder()
++                .setHeader("User-Agent", vg.server.getVersion().getName() + "/" + vg.server.getVersion().getVersion())
++                .uri(URI.create(url))
++                .build();
++        final HttpClient httpClient = vg.server.createHttpClient();
++        return httpClient.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString())
++                .thenApplyAsync(response -> {
++                    if (player.getConnection().isClosed()) {
++                        // The player disconnected after we authenticated them.
++                        return false;
++                    }
++
++                    if (response.statusCode() == 200) {
++                        player.profile = GENERAL_GSON.fromJson(response.body(), GameProfile.class);
++                        return true;
++                    } else if (response.statusCode() == 204) {
++                        // Apparently an offline-mode user logged onto this online-mode proxy.
++                        player.disconnect(Component.translatable("velocity.error.online-mode-only", NamedTextColor.RED));
++                    } else {
++                        // Something else went wrong
++                        logger.error("Got an unexpected error code {} whilst contacting Mojang to log in {} ({})", response.statusCode(), username, playerIp);
++                        player.disconnect(Component.translatable("multiplayer.disconnect.authservers_down"));
++                    }
++                    return false;
++                }, player.getConnection().eventLoop())
++                .exceptionally(throwable -> {
++                    logger.error("Unable to contact Mojang to log in {} ({})", username, playerIp, throwable);
++                    player.disconnect(Component.translatable("multiplayer.disconnect.authservers_down"));
++                    return false;
++                })
++                .thenApply(it -> {
++                    if (httpClient instanceof final AutoCloseable closeable) {
++                        try {
++                            closeable.close();
++                        } catch (Exception e) {
++                            // In Java 21, the HttpClient does not throw any Exception
++                            // when trying to clean its resources, so this should not happen
++                            logger.error("An unknown error occurred while trying to close an HttpClient", e);
++                        }
++                    }
++                    return it;
++                });
++    }
++
++}

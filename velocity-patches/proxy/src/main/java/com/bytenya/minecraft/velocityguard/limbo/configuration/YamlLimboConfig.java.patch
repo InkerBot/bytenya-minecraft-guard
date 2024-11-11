@@ -1,9 +1,9 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/configuration/YamlLimboConfig.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/configuration/YamlLimboConfig.java
 new file mode 100644
-index 00000000..4a2fc004
+index 00000000..435e6b74
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/configuration/YamlLimboConfig.java
-@@ -0,0 +1,312 @@
+@@ -0,0 +1,295 @@
 +/*
 + * Copyright (C) 2020 Nan1t
 + *
@@ -23,6 +23,16 @@ index 00000000..4a2fc004
 +
 +package com.bytenya.minecraft.velocityguard.limbo.configuration;
 +
++import com.bytenya.minecraft.velocityguard.limbo.server.data.BossBar;
++import com.bytenya.minecraft.velocityguard.limbo.server.data.InfoForwarding;
++import com.bytenya.minecraft.velocityguard.limbo.server.data.PingData;
++import com.bytenya.minecraft.velocityguard.limbo.server.data.Title;
++import com.bytenya.minecraft.velocityguard.limbo.util.Colors;
++import org.spongepowered.configurate.ConfigurationNode;
++import org.spongepowered.configurate.ConfigurationOptions;
++import org.spongepowered.configurate.serialize.TypeSerializerCollection;
++import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
++
 +import java.io.BufferedReader;
 +import java.io.FileNotFoundException;
 +import java.io.IOException;
@@ -31,17 +41,6 @@ index 00000000..4a2fc004
 +import java.nio.file.Files;
 +import java.nio.file.Path;
 +import java.nio.file.Paths;
-+
-+import org.spongepowered.configurate.ConfigurationNode;
-+import org.spongepowered.configurate.ConfigurationOptions;
-+import org.spongepowered.configurate.serialize.TypeSerializerCollection;
-+import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
-+
-+import com.bytenya.minecraft.velocityguard.limbo.server.data.BossBar;
-+import com.bytenya.minecraft.velocityguard.limbo.server.data.InfoForwarding;
-+import com.bytenya.minecraft.velocityguard.limbo.server.data.PingData;
-+import com.bytenya.minecraft.velocityguard.limbo.server.data.Title;
-+import com.bytenya.minecraft.velocityguard.limbo.util.Colors;
 +
 +public final class YamlLimboConfig implements LimboConfig {
 +
@@ -55,14 +54,12 @@ index 00000000..4a2fc004
 +    private String dimensionType;
 +    private int gameMode;
 +
-+    private boolean useBrandName;
 +    private boolean useJoinMessage;
 +    private boolean useBossBar;
 +    private boolean useTitle;
 +    private boolean usePlayerList;
 +    private boolean useHeaderAndFooter;
 +
-+    private String brandName;
 +    private String joinMessage;
 +    private BossBar bossBar;
 +    private Title title;
@@ -84,7 +81,7 @@ index 00000000..4a2fc004
 +    private double interval;
 +    private double maxPacketRate;
 +
-+    public YamlLimboConfig(Path root,ClassLoader classLoader) {
++    public YamlLimboConfig(Path root, ClassLoader classLoader) {
 +        this.root = root;
 +        this.classLoader = classLoader;
 +    }
@@ -109,16 +106,12 @@ index 00000000..4a2fc004
 +            dimensionType = "the_end";
 +        }
 +        gameMode = conf.node("gameMode").getInt();
-+        useBrandName = conf.node("brandName", "enable").getBoolean();
 +        useJoinMessage = conf.node("joinMessage", "enable").getBoolean();
 +        useBossBar = conf.node("bossBar", "enable").getBoolean();
 +        useTitle = conf.node("title", "enable").getBoolean();
 +        usePlayerList = conf.node("playerList", "enable").getBoolean();
 +        playerListUsername = conf.node("playerList", "username").getString();
 +        useHeaderAndFooter = conf.node("headerAndFooter", "enable").getBoolean();
-+
-+        if (useBrandName)
-+            brandName = conf.node("brandName", "content").getString();
 +
 +        if (useJoinMessage)
 +            joinMessage = Colors.of(conf.node("joinMessage", "text").getString(""));
@@ -216,11 +209,6 @@ index 00000000..4a2fc004
 +    }
 +
 +    @Override
-+    public boolean isUseBrandName() {
-+        return useBrandName;
-+    }
-+
-+    @Override
 +    public boolean isUseJoinMessage() {
 +        return useJoinMessage;
 +    }
@@ -243,11 +231,6 @@ index 00000000..4a2fc004
 +    @Override
 +    public boolean isUseHeaderAndFooter() {
 +        return useHeaderAndFooter;
-+    }
-+
-+    @Override
-+    public String getBrandName() {
-+        return brandName;
 +    }
 +
 +    @Override

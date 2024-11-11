@@ -1,6 +1,6 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/registry/Version.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/registry/Version.java
 new file mode 100644
-index 00000000..fcc528f3
+index 00000000..e2a5452c
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/registry/Version.java
 @@ -0,0 +1,146 @@
@@ -106,6 +106,18 @@ index 00000000..fcc528f3
 +        this.protocolNumber = protocolNumber;
 +    }
 +
++    public static Version getMin() {
++        return V1_7_2;
++    }
++
++    public static Version getMax() {
++        return MAX;
++    }
++
++    public static Version of(int protocolNumber) {
++        return VERSION_MAP.getOrDefault(protocolNumber, UNDEFINED);
++    }
++
 +    public int getProtocolNumber() {
 +        return this.protocolNumber;
 +    }
@@ -136,17 +148,5 @@ index 00000000..fcc528f3
 +
 +    public boolean isSupported() {
 +        return this != UNDEFINED;
-+    }
-+
-+    public static Version getMin() {
-+        return V1_7_2;
-+    }
-+
-+    public static Version getMax() {
-+        return MAX;
-+    }
-+
-+    public static Version of(int protocolNumber) {
-+        return VERSION_MAP.getOrDefault(protocolNumber, UNDEFINED);
 +    }
 +}

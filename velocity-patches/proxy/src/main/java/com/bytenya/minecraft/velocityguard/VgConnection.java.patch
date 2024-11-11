@@ -1,94 +1,134 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgConnection.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgConnection.java
 new file mode 100644
-index 00000000..0eaaca0e
+index 00000000..a550d30e
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/VgConnection.java
-@@ -0,0 +1,88 @@
+@@ -0,0 +1,128 @@
 +package com.bytenya.minecraft.velocityguard;
 +
++import com.velocitypowered.api.scheduler.Scheduler;
 +import com.velocitypowered.api.util.GameProfile;
 +import com.velocitypowered.proxy.connection.MinecraftConnection;
++import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
 +import io.netty.channel.Channel;
++import io.netty.channel.EventLoop;
++import net.kyori.adventure.text.Component;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
 +import org.jetbrains.annotations.Nullable;
 +
 +import java.nio.charset.StandardCharsets;
 +import java.util.UUID;
 +
 +public class VgConnection {
-+  private final VelocityGuard vg;
-+  private final Channel channel;
-+  private final MinecraftConnection minecraftConnection;
-+  private final long connectTime;
-+  public final GameProfile unloginedProfile;
++    private static final Logger logger = LogManager.getLogger(VgConnection.class);
 +
-+  private @Nullable String serverId;
-+  private @Nullable String requestUsername;
-+  private @Nullable GameProfile onlineProfile;
++    public final UUID sessionId;
 +
-+  public VgConnection(VelocityGuard vg, Channel channel, MinecraftConnection minecraftConnection) {
-+    this.vg = vg;
-+    this.channel = channel;
-+    this.minecraftConnection = minecraftConnection;
++    public final GameProfile unloginedProfile;
++    private final VelocityGuard vg;
++    private final Channel channel;
++    public final MinecraftConnection minecraftConnection;
++    private final long connectTime;
 +
-+    this.connectTime = System.currentTimeMillis();
++    public @Nullable String serverId;
++    public @Nullable String requestUsername;
++    public @Nullable GameProfile onlineProfile;
++    public @Nullable ConnectedPlayer connectedPlayer;
 +
-+    String channelId = channel.id().asLongText();
-+    this.unloginedProfile = new GameProfile(
-+        UUID.nameUUIDFromBytes(channelId.getBytes(StandardCharsets.UTF_8)),
-+        "#" + channelId,
-+        vg.config.unloginedProperties
-+    );
-+  }
++    public int trustLevel;
++    /**
++     * 早期直接信任：不需要进一步验证，直接进入正常流程（也就是 ByteNya Guard 不作任何修改）
++     */
++    public boolean earlyTrust;
 +
-+  public void computeRequestUsername(String username) {
-+    this.requestUsername = username;
-+  }
++    public VgConnection(VelocityGuard vg, Channel channel, MinecraftConnection minecraftConnection) {
++        this.sessionId = UUID.randomUUID();
++        this.vg = vg;
++        this.channel = channel;
++        this.minecraftConnection = minecraftConnection;
 +
-+  public Identifier networkIdentifier() {
-+    if (requestUsername == null) {
-+      throw new IllegalStateException("Request username is not computed");
++        this.connectTime = System.currentTimeMillis();
++
++        String channelId = channel.id().asShortText();
++        this.unloginedProfile = new GameProfile(
++                sessionId, channelId,
++                vg.config.unloginedProperties
++        );
 +    }
-+    return new Identifier(
-+        minecraftConnection.getRemoteAddress().toString(),
-+        requestUsername
-+    );
-+  }
 +
-+  public void computeServerId(String serverId) {
-+    this.serverId = serverId;
-+  }
++    public void computeRequestUsername(String username) {
++        this.requestUsername = username;
++    }
 +
-+  public void computeOnlineProfile(GameProfile onlineProfile) {
-+    this.onlineProfile = onlineProfile;
-+  }
++    public Identifier networkIdentifier() {
++        if (requestUsername == null) {
++            throw new IllegalStateException("Request username is not computed");
++        }
++        return new Identifier(
++                minecraftConnection.getRemoteAddress().toString(),
++                requestUsername
++        );
++    }
 +
-+  public void channelInactive() {
++    public void computeServerId(String serverId) {
++        this.serverId = serverId;
++    }
 +
-+  }
++    public void computeOnlineProfile(GameProfile onlineProfile) {
++        this.onlineProfile = onlineProfile;
++    }
 +
-+  public static final class Identifier {
-+    public final String ip;
-+    public final String username;
++    public void channelInactive() {
 +
-+    public Identifier(String ip, String username) {
-+      this.ip = ip;
-+      this.username = username;
++    }
++
++    public boolean canTrust(int level) {
++        return earlyTrust || trustLevel >= level;
++    }
++
++    public void sendMessage(Component component) {
++        if (connectedPlayer != null) {
++            connectedPlayer.sendMessage(component);
++        } else {
++            logger.warn("Attempted to send message {} to player {} that is not connected", component, requestUsername);
++        }
++    }
++
++    public EventLoop eventLoop() {
++        return minecraftConnection.eventLoop();
 +    }
 +
 +    @Override
-+    public boolean equals(Object o) {
-+      if (this == o) return true;
-+      if (o == null || getClass() != o.getClass()) return false;
-+
-+      Identifier that = (Identifier) o;
-+      return ip.equals(that.ip) && username.equals(that.username);
++    public String toString() {
++        final boolean isPlayerAddressLoggingEnabled = vg.server.getConfiguration().isPlayerAddressLoggingEnabled();
++        final String playerIp = isPlayerAddressLoggingEnabled ? minecraftConnection.getRemoteAddress().toString() : "<ip address withheld>";
++        return "[ByteNya player] " + requestUsername + " (" + playerIp + ", " + sessionId + ")";
 +    }
 +
-+    @Override
-+    public int hashCode() {
-+      int result = ip.hashCode();
-+      result = 31 * result + username.hashCode();
-+      return result;
++    public static final class Identifier {
++        public final String ip;
++        public final String username;
++
++        public Identifier(String ip, String username) {
++            this.ip = ip;
++            this.username = username;
++        }
++
++        @Override
++        public boolean equals(Object o) {
++            if (this == o) return true;
++            if (o == null || getClass() != o.getClass()) return false;
++
++            Identifier that = (Identifier) o;
++            return ip.equals(that.ip) && username.equals(that.username);
++        }
++
++        @Override
++        public int hashCode() {
++            int result = ip.hashCode();
++            result = 31 * result + username.hashCode();
++            return result;
++        }
 +    }
-+  }
 +}

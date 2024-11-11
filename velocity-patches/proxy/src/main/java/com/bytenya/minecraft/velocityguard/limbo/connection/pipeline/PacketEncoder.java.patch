@@ -1,6 +1,6 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/pipeline/PacketEncoder.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/pipeline/PacketEncoder.java
 new file mode 100644
-index 00000000..1ad09abe
+index 00000000..23baaa1c
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/pipeline/PacketEncoder.java
 @@ -0,0 +1,79 @@
@@ -23,14 +23,14 @@ index 00000000..1ad09abe
 +
 +package com.bytenya.minecraft.velocityguard.limbo.connection.pipeline;
 +
-+import io.netty.buffer.ByteBuf;
-+import io.netty.channel.ChannelHandlerContext;
-+import io.netty.handler.codec.MessageToByteEncoder;
 +import com.bytenya.minecraft.velocityguard.limbo.protocol.ByteMessage;
 +import com.bytenya.minecraft.velocityguard.limbo.protocol.Packet;
 +import com.bytenya.minecraft.velocityguard.limbo.protocol.PacketSnapshot;
 +import com.bytenya.minecraft.velocityguard.limbo.protocol.registry.State;
 +import com.bytenya.minecraft.velocityguard.limbo.protocol.registry.Version;
++import io.netty.buffer.ByteBuf;
++import io.netty.channel.ChannelHandlerContext;
++import io.netty.handler.codec.MessageToByteEncoder;
 +import org.apache.logging.log4j.LogManager;
 +import org.apache.logging.log4j.Logger;
 +
@@ -53,7 +53,7 @@ index 00000000..1ad09abe
 +        int packetId;
 +
 +        if (packet instanceof PacketSnapshot) {
-+            packetId = registry.getPacketId(((PacketSnapshot)packet).getWrappedPacket().getClass());
++            packetId = registry.getPacketId(((PacketSnapshot) packet).getWrappedPacket().getClass());
 +        } else {
 +            packetId = registry.getPacketId(packet.getClass());
 +        }

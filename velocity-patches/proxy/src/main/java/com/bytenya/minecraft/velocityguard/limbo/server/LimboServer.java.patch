@@ -1,9 +1,9 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/LimboServer.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/LimboServer.java
 new file mode 100644
-index 00000000..a274ffa0
+index 00000000..c6e946fc
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/server/LimboServer.java
-@@ -0,0 +1,169 @@
+@@ -0,0 +1,164 @@
 +/*
 + * Copyright (C) 2020 Nan1t
 + *
@@ -23,11 +23,12 @@ index 00000000..a274ffa0
 +
 +package com.bytenya.minecraft.velocityguard.limbo.server;
 +
-+import java.net.InetSocketAddress;
-+import java.net.SocketAddress;
-+import java.util.concurrent.ScheduledFuture;
-+import java.util.concurrent.TimeUnit;
-+
++import com.bytenya.minecraft.velocityguard.limbo.configuration.LimboConfig;
++import com.bytenya.minecraft.velocityguard.limbo.connection.ClientChannelInitializer;
++import com.bytenya.minecraft.velocityguard.limbo.connection.ClientConnection;
++import com.bytenya.minecraft.velocityguard.limbo.connection.PacketHandler;
++import com.bytenya.minecraft.velocityguard.limbo.connection.PacketSnapshots;
++import com.bytenya.minecraft.velocityguard.limbo.world.DimensionRegistry;
 +import io.netty.bootstrap.ServerBootstrap;
 +import io.netty.channel.ChannelFuture;
 +import io.netty.channel.ChannelOption;
@@ -39,33 +40,27 @@ index 00000000..a274ffa0
 +import io.netty.channel.nio.NioEventLoopGroup;
 +import io.netty.channel.socket.nio.NioServerSocketChannel;
 +import io.netty.util.ResourceLeakDetector;
-+import com.bytenya.minecraft.velocityguard.limbo.configuration.LimboConfig;
-+import com.bytenya.minecraft.velocityguard.limbo.connection.ClientChannelInitializer;
-+import com.bytenya.minecraft.velocityguard.limbo.connection.ClientConnection;
-+import com.bytenya.minecraft.velocityguard.limbo.connection.PacketHandler;
-+import com.bytenya.minecraft.velocityguard.limbo.connection.PacketSnapshots;
-+import com.bytenya.minecraft.velocityguard.limbo.world.DimensionRegistry;
 +import org.apache.logging.log4j.LogManager;
 +import org.apache.logging.log4j.Logger;
 +
++import java.net.InetSocketAddress;
++import java.util.concurrent.ScheduledFuture;
++import java.util.concurrent.TimeUnit;
++
 +public final class LimboServer {
 +    private static final Logger logger = LogManager.getLogger(LimboServer.class);
-+
++    private final LimboConfig config;
++    private final CommandHandler<Command> commandHandler;
++    private final ClassLoader classLoader;
 +    private boolean running = false;
-+
 +    private PacketHandler packetHandler;
 +    private PacketSnapshots packetSnapshots;
 +    private Connections connections;
 +    private DimensionRegistry dimensionRegistry;
 +    private ScheduledFuture<?> keepAliveTask;
-+
 +    private EventLoopGroup bossGroup;
 +    private EventLoopGroup workerGroup;
 +    private ChannelFuture channel;
-+
-+    private final LimboConfig config;
-+    private final CommandHandler<Command> commandHandler;
-+    private final ClassLoader classLoader;
 +
 +    public LimboServer(LimboConfig config, CommandHandler<Command> commandHandler, ClassLoader classLoader) {
 +        this.config = config;

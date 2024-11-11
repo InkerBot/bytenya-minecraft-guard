@@ -1,16 +1,16 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketEmptyChunk.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketEmptyChunk.java
 new file mode 100644
-index 00000000..187eb159
+index 00000000..a47c3496
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/protocol/packets/play/PacketEmptyChunk.java
 @@ -0,0 +1,47 @@
 +package com.bytenya.minecraft.velocityguard.limbo.protocol.packets.play;
 +
-+import net.kyori.adventure.nbt.CompoundBinaryTag;
-+import net.kyori.adventure.nbt.LongArrayBinaryTag;
 +import com.bytenya.minecraft.velocityguard.limbo.protocol.ByteMessage;
 +import com.bytenya.minecraft.velocityguard.limbo.protocol.PacketOut;
 +import com.bytenya.minecraft.velocityguard.limbo.protocol.registry.Version;
++import net.kyori.adventure.nbt.CompoundBinaryTag;
++import net.kyori.adventure.nbt.LongArrayBinaryTag;
 +
 +public class PacketEmptyChunk implements PacketOut {
 +
@@ -49,5 +49,5 @@ index 00000000..187eb159
 +        msg.ensureWritable(lightData.length);
 +        msg.writeBytes(lightData, 1, lightData.length - 1);
 +    }
-+    
++
 +}

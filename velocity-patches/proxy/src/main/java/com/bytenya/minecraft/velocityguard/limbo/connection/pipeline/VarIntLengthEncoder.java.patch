@@ -1,6 +1,6 @@
 diff --git a/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/pipeline/VarIntLengthEncoder.java b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/pipeline/VarIntLengthEncoder.java
 new file mode 100644
-index 00000000..0b1621c2
+index 00000000..a3849354
 --- /dev/null
 +++ b/proxy/src/main/java/com/bytenya/minecraft/velocityguard/limbo/connection/pipeline/VarIntLengthEncoder.java
 @@ -0,0 +1,41 @@
@@ -23,11 +23,11 @@ index 00000000..0b1621c2
 +
 +package com.bytenya.minecraft.velocityguard.limbo.connection.pipeline;
 +
++import com.bytenya.minecraft.velocityguard.limbo.protocol.ByteMessage;
 +import io.netty.buffer.ByteBuf;
 +import io.netty.channel.ChannelHandler;
 +import io.netty.channel.ChannelHandlerContext;
 +import io.netty.handler.codec.MessageToByteEncoder;
-+import com.bytenya.minecraft.velocityguard.limbo.protocol.ByteMessage;
 +
 +@ChannelHandler.Sharable
 +public class VarIntLengthEncoder extends MessageToByteEncoder<ByteBuf> {
